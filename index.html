@@ -1,0 +1,1924 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>🎯 Valorant Training Notes</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+/* ============================================================
+   ROOT / RESET
+   ============================================================ */
+:root{
+  --bg:#080b11;
+  --bg-glow-1:rgba(255,70,85,.10);
+  --bg-glow-2:rgba(34,211,238,.08);
+  --surface:#111825;
+  --surface-2:#16202f;
+  --surface-3:#1b2738;
+  --border:#233046;
+  --border-soft:#1a2534;
+  --text:#e7edf6;
+  --muted:#8e9db3;
+  --accent:#ff4655;
+  --accent-soft:rgba(255,70,85,.14);
+  --accent-2:#22d3ee;
+  --accent-2-soft:rgba(34,211,238,.12);
+  --gold:#f5b942;
+  --radius:14px;
+  --sidebar-w:290px;
+  --ease:cubic-bezier(.22,.8,.24,1);
+}
+
+*,*::before,*::after{box-sizing:border-box;}
+
+html{
+  scroll-behavior:smooth;
+  scroll-padding-top:90px;
+}
+
+body{
+  margin:0;
+  font-family:'Inter',-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;
+  background:var(--bg);
+  color:var(--text);
+  line-height:1.7;
+  font-size:16px;
+  -webkit-font-smoothing:antialiased;
+  overflow-x:hidden;
+}
+
+/* Ambient background glows */
+body::before{
+  content:"";
+  position:fixed;
+  inset:0;
+  pointer-events:none;
+  z-index:0;
+  background:
+    radial-gradient(900px 600px at 12% -8%, var(--bg-glow-1), transparent 60%),
+    radial-gradient(900px 700px at 95% 8%, var(--bg-glow-2), transparent 60%),
+    radial-gradient(700px 700px at 50% 115%, rgba(255,70,85,.06), transparent 60%);
+}
+
+::selection{background:var(--accent);color:#fff;}
+
+/* Scrollbar */
+::-webkit-scrollbar{width:11px;height:11px;}
+::-webkit-scrollbar-track{background:#0b1018;}
+::-webkit-scrollbar-thumb{
+  background:linear-gradient(180deg,#2a3a52,#1c2738);
+  border-radius:20px;
+  border:2px solid #0b1018;
+}
+::-webkit-scrollbar-thumb:hover{background:linear-gradient(180deg,var(--accent),#b9313d);}
+
+/* ============================================================
+   PROGRESS BAR
+   ============================================================ */
+#progress{
+  position:fixed;
+  top:0;left:0;
+  height:3px;
+  width:0%;
+  z-index:1000;
+  background:linear-gradient(90deg,var(--accent),#ff8a5c,var(--accent-2));
+  box-shadow:0 0 14px rgba(255,70,85,.8);
+  transition:width .1s linear;
+}
+
+/* ============================================================
+   TOP BAR
+   ============================================================ */
+.topbar{
+  position:fixed;
+  top:0;left:0;right:0;
+  height:64px;
+  z-index:900;
+  display:flex;
+  align-items:center;
+  gap:14px;
+  padding:0 22px;
+  background:rgba(8,11,17,.78);
+  backdrop-filter:blur(14px);
+  -webkit-backdrop-filter:blur(14px);
+  border-bottom:1px solid var(--border-soft);
+}
+
+.brand{
+  display:flex;
+  align-items:center;
+  gap:10px;
+  font-family:'Barlow Condensed',sans-serif;
+  font-size:1.35rem;
+  font-weight:700;
+  letter-spacing:.06em;
+  text-transform:uppercase;
+  color:var(--text);
+  text-decoration:none;
+  white-space:nowrap;
+}
+.brand .dot{
+  width:10px;height:10px;
+  border-radius:50%;
+  background:var(--accent);
+  box-shadow:0 0 12px var(--accent);
+  animation:pulse 2.2s ease-in-out infinite;
+}
+@keyframes pulse{
+  0%,100%{transform:scale(1);opacity:1;}
+  50%{transform:scale(.7);opacity:.55;}
+}
+
+.topbar-spacer{flex:1;}
+
+.topbar-actions{display:flex;gap:10px;align-items:center;}
+
+.btn{
+  font-family:'Inter',sans-serif;
+  font-size:.78rem;
+  font-weight:600;
+  letter-spacing:.04em;
+  text-transform:uppercase;
+  color:var(--muted);
+  background:var(--surface-2);
+  border:1px solid var(--border);
+  padding:9px 16px;
+  border-radius:9px;
+  cursor:pointer;
+  transition:all .25s var(--ease);
+  white-space:nowrap;
+}
+.btn:hover{
+  color:#fff;
+  border-color:var(--accent);
+  background:var(--accent-soft);
+  transform:translateY(-1px);
+}
+.btn:active{transform:translateY(0);}
+
+#menuToggle{display:none;}
+
+/* ============================================================
+   LAYOUT
+   ============================================================ */
+.layout{
+  position:relative;
+  z-index:1;
+  display:flex;
+  padding-top:64px;
+}
+
+/* ============================================================
+   SIDEBAR
+   ============================================================ */
+.sidebar{
+  position:fixed;
+  top:64px;
+  left:0;
+  bottom:0;
+  width:var(--sidebar-w);
+  padding:26px 16px 60px;
+  overflow-y:auto;
+  background:linear-gradient(180deg,rgba(17,24,37,.92),rgba(10,14,21,.96));
+  border-right:1px solid var(--border-soft);
+  transition:transform .4s var(--ease);
+  z-index:800;
+}
+
+.sidebar-label{
+  font-size:.68rem;
+  font-weight:700;
+  letter-spacing:.18em;
+  text-transform:uppercase;
+  color:#5d6c83;
+  padding:0 12px;
+  margin:0 0 14px;
+}
+
+.toc{list-style:none;margin:0;padding:0;}
+
+.toc li{margin:0;}
+
+.toc a{
+  position:relative;
+  display:flex;
+  align-items:center;
+  gap:10px;
+  padding:10px 12px;
+  margin-bottom:3px;
+  border-radius:10px;
+  color:var(--muted);
+  text-decoration:none;
+  font-size:.9rem;
+  font-weight:500;
+  transition:color .22s var(--ease), background .22s var(--ease), transform .22s var(--ease);
+}
+.toc a::before{
+  content:"";
+  position:absolute;
+  left:0;top:50%;
+  width:3px;height:0;
+  background:var(--accent);
+  border-radius:3px;
+  transform:translateY(-50%);
+  transition:height .28s var(--ease);
+}
+.toc a:hover{
+  color:var(--text);
+  background:rgba(255,255,255,.035);
+  transform:translateX(3px);
+}
+.toc a.active{
+  color:#fff;
+  background:linear-gradient(90deg,var(--accent-soft),transparent);
+}
+.toc a.active::before{height:60%;box-shadow:0 0 12px var(--accent);}
+
+.toc .num{
+  font-family:'Barlow Condensed',sans-serif;
+  font-size:.8rem;
+  font-weight:700;
+  color:#4d5c73;
+  min-width:16px;
+  transition:color .22s;
+}
+.toc a.active .num{color:var(--accent);}
+
+/* Nested week links */
+.toc-sub{
+  list-style:none;
+  margin:2px 0 8px 0;
+  padding:0 0 0 18px;
+  max-height:0;
+  overflow:hidden;
+  transition:max-height .45s var(--ease);
+  border-left:1px solid var(--border-soft);
+  margin-left:19px;
+}
+.toc li.has-sub.open .toc-sub{max-height:420px;}
+
+.toc-sub a{
+  font-size:.8rem;
+  padding:6px 10px;
+  color:#6f7f96;
+}
+.toc-sub a.active{color:var(--accent-2);background:var(--accent-2-soft);}
+.toc-sub a.active::before{background:var(--accent-2);}
+
+/* ============================================================
+   MAIN
+   ============================================================ */
+main{
+  flex:1;
+  margin-left:var(--sidebar-w);
+  padding:44px 48px 140px;
+  max-width:1080px;
+}
+
+/* ---------- Hero ---------- */
+.hero{
+  position:relative;
+  padding:46px 40px;
+  margin-bottom:52px;
+  border-radius:22px;
+  background:
+    radial-gradient(600px 300px at 88% 0%, rgba(34,211,238,.10), transparent 65%),
+    linear-gradient(135deg, #16202f, #0e1420 70%);
+  border:1px solid var(--border);
+  overflow:hidden;
+}
+.hero::after{
+  content:"";
+  position:absolute;
+  top:-60%;right:-10%;
+  width:340px;height:340px;
+  border-radius:50%;
+  background:radial-gradient(circle, rgba(255,70,85,.22), transparent 70%);
+  filter:blur(10px);
+  animation:floaty 9s ease-in-out infinite;
+}
+@keyframes floaty{
+  0%,100%{transform:translate(0,0) scale(1);}
+  50%{transform:translate(-26px,26px) scale(1.12);}
+}
+.hero h1{
+  position:relative;
+  z-index:1;
+  margin:0 0 12px;
+  font-family:'Barlow Condensed',sans-serif;
+  font-size:clamp(2.1rem,4.4vw,3.3rem);
+  font-weight:700;
+  letter-spacing:.02em;
+  line-height:1.1;
+  background:linear-gradient(96deg,#fff 25%,var(--accent) 65%,var(--accent-2));
+  -webkit-background-clip:text;
+  background-clip:text;
+  color:transparent;
+  animation:heroIn .9s var(--ease) both;
+}
+.hero p{
+  position:relative;
+  z-index:1;
+  margin:0;
+  max-width:620px;
+  color:var(--muted);
+  font-size:1rem;
+  animation:heroIn .9s .12s var(--ease) both;
+}
+@keyframes heroIn{
+  from{opacity:0;transform:translateY(22px);}
+  to{opacity:1;transform:none;}
+}
+
+.hero-tags{
+  position:relative;
+  z-index:1;
+  display:flex;
+  flex-wrap:wrap;
+  gap:9px;
+  margin-top:22px;
+  animation:heroIn .9s .22s var(--ease) both;
+}
+.tag{
+  font-size:.72rem;
+  font-weight:600;
+  letter-spacing:.06em;
+  text-transform:uppercase;
+  padding:6px 13px;
+  border-radius:100px;
+  background:rgba(255,255,255,.05);
+  border:1px solid var(--border);
+  color:#a9b7cb;
+}
+
+/* ---------- Sections ---------- */
+section{
+  margin-bottom:64px;
+  scroll-margin-top:88px;
+}
+
+h2{
+  display:flex;
+  align-items:center;
+  gap:14px;
+  font-family:'Barlow Condensed',sans-serif;
+  font-size:clamp(1.6rem,3vw,2.1rem);
+  font-weight:700;
+  letter-spacing:.03em;
+  text-transform:uppercase;
+  color:#fff;
+  margin:0 0 8px;
+  padding-bottom:14px;
+  position:relative;
+}
+h2::after{
+  content:"";
+  position:absolute;
+  left:0;bottom:0;
+  height:2px;width:100%;
+  background:linear-gradient(90deg,var(--accent),rgba(255,70,85,.25) 22%,transparent 65%);
+  border-radius:2px;
+}
+
+h3{
+  font-family:'Barlow Condensed',sans-serif;
+  font-size:1.32rem;
+  font-weight:700;
+  letter-spacing:.03em;
+  color:var(--accent-2);
+  margin:34px 0 12px;
+  display:flex;
+  align-items:center;
+  gap:10px;
+}
+h3::before{
+  content:"";
+  width:4px;height:18px;
+  border-radius:3px;
+  background:var(--accent-2);
+  box-shadow:0 0 10px rgba(34,211,238,.7);
+  flex-shrink:0;
+}
+
+h4{
+  font-size:1rem;
+  font-weight:700;
+  letter-spacing:.01em;
+  color:#fff;
+  margin:24px 0 10px;
+}
+
+p{margin:0 0 14px;color:#c3cddd;}
+
+/* ---------- Lists ---------- */
+ul,ol{
+  margin:0 0 16px;
+  padding-left:22px;
+  color:#c3cddd;
+}
+li{margin:0 0 8px;}
+li::marker{color:var(--accent);}
+ul li::marker{color:var(--accent-2);}
+
+strong{color:#fff;font-weight:600;}
+em{color:#a9b7cb;}
+
+/* ---------- Blockquote ---------- */
+blockquote{
+  position:relative;
+  margin:18px 0 20px;
+  padding:16px 20px 16px 46px;
+  background:linear-gradient(90deg,rgba(255,70,85,.10),rgba(255,70,85,.02));
+  border-left:3px solid var(--accent);
+  border-radius:0 12px 12px 0;
+  color:#d3dcea;
+  font-size:.95rem;
+  animation:none;
+}
+blockquote::before{
+  content:"❝";
+  position:absolute;
+  left:15px;top:11px;
+  font-size:1.5rem;
+  color:var(--accent);
+  opacity:.65;
+  line-height:1;
+}
+blockquote p:last-child{margin-bottom:0;}
+
+/* ---------- Links ---------- */
+a{
+  color:var(--accent-2);
+  text-decoration:none;
+  border-bottom:1px dashed rgba(34,211,238,.4);
+  transition:color .2s, border-color .2s;
+}
+a:hover{color:#7ce9ff;border-bottom-color:#7ce9ff;}
+
+/* ---------- Cards ---------- */
+.card{
+  background:linear-gradient(160deg,var(--surface-2),var(--surface));
+  border:1px solid var(--border);
+  border-radius:var(--radius);
+  padding:22px 24px;
+  margin:0 0 18px;
+  transition:transform .3s var(--ease), border-color .3s var(--ease), box-shadow .3s var(--ease);
+}
+.card:hover{
+  transform:translateY(-3px);
+  border-color:rgba(255,70,85,.45);
+  box-shadow:0 14px 34px -14px rgba(0,0,0,.85), 0 0 0 1px rgba(255,70,85,.10);
+}
+.card h4{margin-top:0;}
+.card p:last-child,.card ul:last-child,.card ol:last-child{margin-bottom:0;}
+
+/* Grid of cards */
+.card-grid{
+  display:grid;
+  grid-template-columns:repeat(auto-fill,minmax(290px,1fr));
+  gap:16px;
+  margin-bottom:18px;
+}
+.card-grid .card{margin:0;}
+
+/* Rule cards */
+.rule{
+  display:flex;
+  gap:16px;
+  align-items:flex-start;
+  background:linear-gradient(120deg,var(--surface-2),var(--surface));
+  border:1px solid var(--border);
+  border-left:3px solid var(--accent);
+  border-radius:12px;
+  padding:16px 20px;
+  margin-bottom:12px;
+  transition:transform .28s var(--ease), border-color .28s, background .28s;
+}
+.rule:hover{
+  transform:translateX(5px);
+  border-left-color:var(--accent-2);
+  background:linear-gradient(120deg,#1a2536,var(--surface));
+}
+.rule .rnum{
+  font-family:'Barlow Condensed',sans-serif;
+  font-size:1.5rem;
+  font-weight:700;
+  color:var(--accent);
+  line-height:1;
+  min-width:34px;
+  opacity:.85;
+}
+.rule .rbody{flex:1;color:#c3cddd;font-size:.94rem;}
+.rule .rbody strong{color:#fff;}
+
+/* ---------- Tables ---------- */
+.table-wrap{
+  overflow-x:auto;
+  border:1px solid var(--border);
+  border-radius:var(--radius);
+  margin:0 0 22px;
+  background:var(--surface);
+}
+table{
+  width:100%;
+  border-collapse:collapse;
+  font-size:.92rem;
+  min-width:380px;
+}
+thead th{
+  background:linear-gradient(180deg,#1d293b,#16202e);
+  color:#fff;
+  font-family:'Barlow Condensed',sans-serif;
+  font-size:.85rem;
+  font-weight:700;
+  letter-spacing:.10em;
+  text-transform:uppercase;
+  text-align:left;
+  padding:13px 18px;
+  border-bottom:1px solid var(--border);
+}
+tbody td{
+  padding:12px 18px;
+  border-bottom:1px solid var(--border-soft);
+  color:#c3cddd;
+  vertical-align:top;
+}
+tbody tr:last-child td{border-bottom:none;}
+tbody tr{transition:background .22s;}
+tbody tr:hover{background:rgba(255,70,85,.06);}
+tbody td:first-child{color:#fff;font-weight:600;white-space:nowrap;}
+
+/* ---------- Week accordions ---------- */
+details.week{
+  background:linear-gradient(160deg,var(--surface-2),var(--surface));
+  border:1px solid var(--border);
+  border-radius:var(--radius);
+  margin-bottom:14px;
+  overflow:hidden;
+  transition:border-color .3s var(--ease), box-shadow .3s var(--ease);
+}
+details.week[open]{
+  border-color:rgba(255,70,85,.38);
+  box-shadow:0 16px 40px -22px rgba(255,70,85,.5);
+}
+
+details.week > summary{
+  list-style:none;
+  cursor:pointer;
+  padding:18px 22px;
+  display:flex;
+  align-items:center;
+  gap:14px;
+  font-family:'Barlow Condensed',sans-serif;
+  font-size:1.15rem;
+  font-weight:700;
+  letter-spacing:.04em;
+  text-transform:uppercase;
+  color:#fff;
+  user-select:none;
+  transition:background .25s;
+  position:relative;
+}
+details.week > summary::-webkit-details-marker{display:none;}
+details.week > summary:hover{background:rgba(255,255,255,.03);}
+
+details.week > summary .chev{
+  margin-left:auto;
+  width:22px;height:22px;
+  display:grid;
+  place-items:center;
+  border-radius:6px;
+  background:rgba(255,255,255,.05);
+  color:var(--muted);
+  font-size:.8rem;
+  transition:transform .32s var(--ease), color .25s, background .25s;
+  flex-shrink:0;
+}
+details.week[open] > summary .chev{
+  transform:rotate(180deg);
+  color:var(--accent);
+  background:var(--accent-soft);
+}
+
+.rank-badge{
+  font-family:'Inter',sans-serif;
+  font-size:.66rem;
+  font-weight:700;
+  letter-spacing:.14em;
+  text-transform:uppercase;
+  padding:5px 11px;
+  border-radius:100px;
+  border:1px solid currentColor;
+  opacity:.9;
+  flex-shrink:0;
+}
+.r-iron{color:#9aa4b2;}
+.r-bronze{color:#c98a4b;}
+.r-silver{color:#c9d3e0;}
+.r-gold{color:#f5b942;}
+.r-plat{color:#3ddad7;}
+.r-diamond{color:#a78bfa;}
+.r-asc{color:#4ade80;}
+.r-immortal{color:#ff4655;}
+
+details.week .week-body{
+  padding:4px 24px 24px;
+  border-top:1px solid var(--border-soft);
+  animation:slideDown .4s var(--ease);
+}
+@keyframes slideDown{
+  from{opacity:0;transform:translateY(-8px);}
+  to{opacity:1;transform:none;}
+}
+
+details.week .week-body > h4:first-child{margin-top:20px;}
+
+/* ---------- Utility classes ---------- */
+.section-intro{
+  color:var(--muted);
+  font-size:.97rem;
+  margin:0 0 26px;
+  padding-left:2px;
+}
+
+.pill-note{
+  display:inline-block;
+  font-size:.72rem;
+  font-weight:700;
+  letter-spacing:.1em;
+  text-transform:uppercase;
+  color:var(--gold);
+  background:rgba(245,185,66,.10);
+  border:1px solid rgba(245,185,66,.3);
+  padding:4px 10px;
+  border-radius:6px;
+  margin-bottom:12px;
+}
+
+.soon{
+  color:#5d6c83;
+  font-style:italic;
+  font-size:.9rem;
+}
+
+/* ---------- Reveal animation ---------- */
+.reveal{
+  opacity:0;
+  transform:translateY(22px);
+  transition:opacity .7s var(--ease), transform .7s var(--ease);
+  will-change:opacity, transform;
+}
+.reveal.in{
+  opacity:1;
+  transform:none;
+}
+
+@media (prefers-reduced-motion: reduce){
+  .reveal{opacity:1;transform:none;transition:none;}
+  *{animation-duration:.001s !important;transition-duration:.001s !important;}
+  html{scroll-behavior:auto;}
+}
+
+/* ---------- Back to top ---------- */
+#toTop{
+  position:fixed;
+  right:26px;
+  bottom:26px;
+  width:46px;height:46px;
+  border-radius:50%;
+  border:1px solid var(--border);
+  background:var(--surface-2);
+  color:var(--muted);
+  font-size:1.1rem;
+  cursor:pointer;
+  display:grid;
+  place-items:center;
+  opacity:0;
+  visibility:hidden;
+  transform:translateY(14px);
+  transition:all .35s var(--ease);
+  z-index:850;
+  backdrop-filter:blur(8px);
+}
+#toTop.show{opacity:1;visibility:visible;transform:none;}
+#toTop:hover{
+  color:#fff;
+  border-color:var(--accent);
+  background:var(--accent);
+  box-shadow:0 0 22px rgba(255,70,85,.55);
+}
+
+/* ---------- Footer ---------- */
+footer{
+  margin-top:70px;
+  padding-top:26px;
+  border-top:1px solid var(--border-soft);
+  color:#5d6c83;
+  font-size:.84rem;
+  text-align:center;
+}
+
+/* ============================================================
+   RESPONSIVE
+   ============================================================ */
+@media (max-width: 1080px){
+  main{padding:38px 32px 120px;}
+}
+
+@media (max-width: 980px){
+  #menuToggle{display:inline-block;}
+  .sidebar{transform:translateX(-100%);box-shadow:30px 0 60px rgba(0,0,0,.6);}
+  .sidebar.open{transform:translateX(0);}
+  main{margin-left:0;padding:32px 22px 120px;}
+  .hero{padding:34px 24px;border-radius:18px;}
+  body.nav-open{overflow:hidden;}
+  .overlay{
+    position:fixed;
+    inset:64px 0 0 0;
+    background:rgba(0,0,0,.55);
+    backdrop-filter:blur(2px);
+    opacity:0;
+    visibility:hidden;
+    transition:opacity .35s, visibility .35s;
+    z-index:790;
+  }
+  .overlay.show{opacity:1;visibility:visible;}
+}
+
+@media (max-width: 600px){
+  body{font-size:15px;}
+  .topbar{padding:0 14px;gap:8px;}
+  .brand{font-size:1.05rem;}
+  .btn{padding:8px 11px;font-size:.68rem;}
+  .hero h1{font-size:1.9rem;}
+  details.week > summary{padding:15px 16px;font-size:1rem;flex-wrap:wrap;gap:8px;}
+  details.week .week-body{padding:4px 16px 20px;}
+  h2{font-size:1.45rem;}
+  .card{padding:18px 18px;}
+  blockquote{padding:14px 16px 14px 40px;}
+  #toTop{right:16px;bottom:16px;width:42px;height:42px;}
+}
+</style>
+</head>
+<body>
+
+<div id="progress"></div>
+
+<!-- ================= TOP BAR ================= -->
+<header class="topbar">
+  <button class="btn" id="menuToggle" aria-label="Toggle navigation">☰ Menu</button>
+  <a href="#top" class="brand"><span class="dot"></span> Valorant Training Notes</a>
+  <div class="topbar-spacer"></div>
+  <div class="topbar-actions">
+    <button class="btn" id="expandAll">Expand Weeks</button>
+  </div>
+</header>
+
+<div class="overlay" id="overlay"></div>
+
+<!-- ================= LAYOUT ================= -->
+<div class="layout" id="top">
+
+  <!-- ================= SIDEBAR ================= -->
+  <aside class="sidebar" id="sidebar">
+    <p class="sidebar-label">Contents</p>
+    <ul class="toc">
+      <li><a href="#outside-the-game"><span class="num">01</span> 🧘 Outside the Game</a></li>
+      <li><a href="#inside-the-game"><span class="num">02</span> 🎯 Inside the Game</a></li>
+      <li><a href="#economy"><span class="num">03</span> 💰 Economy</a></li>
+      <li class="has-sub" id="improveItem">
+        <a href="#how-to-improve"><span class="num">04</span> 📈 How to Improve</a>
+        <ul class="toc-sub">
+          <li><a href="#week1">Week 1 — Iron</a></li>
+          <li><a href="#week2">Week 2 — Bronze</a></li>
+          <li><a href="#week3">Week 3 — Silver</a></li>
+          <li><a href="#week4">Week 4 — Gold</a></li>
+          <li><a href="#week5">Week 5 — Plat</a></li>
+          <li><a href="#week6">Week 6 — Diamond</a></li>
+          <li><a href="#week7">Week 7 — Ascendant</a></li>
+          <li><a href="#week8">Week 8 — Immortal</a></li>
+        </ul>
+      </li>
+      <li><a href="#mentality"><span class="num">05</span> 🧠 Mentality</a></li>
+      <li><a href="#guns-guide"><span class="num">06</span> 🔫 Guns Guide</a></li>
+      <li><a href="#aim"><span class="num">07</span> 🎯 Aim</a></li>
+      <li><a href="#skill-master"><span class="num">08</span> 🧬 Skill Master</a></li>
+      <li><a href="#agent-mastery"><span class="num">09</span> 🧩 Agent Mastery</a></li>
+    </ul>
+  </aside>
+
+  <!-- ================= MAIN ================= -->
+  <main>
+
+    <!-- HERO -->
+    <div class="hero">
+      <h1>🎯 Valorant Training Notes</h1>
+      <p>A complete, rank-by-rank training system — from body and mind, through economy and movement, all the way to Agent Mastery. Take one skill. Focus on it for five games. Repeat.</p>
+      <div class="hero-tags">
+        <span class="tag">Iron → Immortal</span>
+        <span class="tag">8 Week Plan</span>
+        <span class="tag">Aim &amp; Economy</span>
+        <span class="tag">Mentality</span>
+      </div>
+    </div>
+
+    <!-- =========================================================
+         1. OUTSIDE THE GAME
+         ========================================================= -->
+    <section id="outside-the-game">
+      <h2>🧘 Outside the Game</h2>
+      <p class="section-intro">Take care of your body and mind — it directly affects your performance.</p>
+
+      <div class="card-grid">
+        <div class="card reveal"><h4>😴 1. Sleep</h4><p>Get enough sleep. Nothing else replaces it.</p></div>
+        <div class="card reveal"><h4>💧 2. Fuel</h4><p>Drink enough water every day and eat well.</p></div>
+        <div class="card reveal"><h4>🏋️ 3. Exercise</h4><p>Work out / exercise — it keeps your head clear.</p></div>
+        <div class="card reveal"><h4>🤲 4. Wrist Warm-Ups</h4><p>Get blood flowing to your hands before playing.</p></div>
+        <div class="card reveal"><h4>🚫 5. Discipline</h4><p>Don't goon.</p></div>
+      </div>
+    </section>
+
+    <!-- =========================================================
+         2. INSIDE THE GAME
+         ========================================================= -->
+    <section id="inside-the-game">
+      <h2>🎯 Inside the Game</h2>
+
+      <h3>1. Learn How to Move</h3>
+      <blockquote><p>Movement is your biggest asset.<br>Use this, study it, and implement it: <a href="https://youtu.be/8lgwinmOFMI?si=SFR-EB7xCzdbfSQ-" target="_blank" rel="noopener">YouTube — Movement Guide</a></p></blockquote>
+
+      <h3>2. Don't Play Vandal</h3>
+      <p>Please. Even if you have a skin. <strong>Just play Phantom.</strong></p>
+
+      <h3>3. Learn How to Read the Map and Enemy</h3>
+      <p>People are predictable because they fall into habits. When you notice certain players in your match doing the same thing, expect it.</p>
+      <blockquote><p>Example: Cypher lurked, and 3 rounds in a row you lost because of it.</p></blockquote>
+
+      <h3>4. Don't Play Too Many Agents</h3>
+      <p>Stick to <strong>3 agents max</strong>.</p>
+
+      <h3>5. Learn How to Swing</h3>
+      <p>This ties into learning movement.</p>
+
+      <h3>6. Don't Spray — Burst Fire</h3>
+      <p>Controlled bursts &gt; full spray.</p>
+
+      <h3>7. Don't Always Crouch</h3>
+      <p>It works in some cases, but learn how to shoot without it.</p>
+
+      <h3>8. Warm Up Before Comp</h3>
+      <div class="card-grid">
+        <div class="card reveal">
+          <h4>① Range — 10 minutes</h4>
+          <p>Shoot bots and focus on controlling the Phantom spray to understand the gun's mechanics.</p>
+        </div>
+        <div class="card reveal">
+          <h4>② Deathmatch — 2–3 games</h4>
+          <p>Then do 2–3 DMs to get your hands and reactions warm.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- =========================================================
+         3. ECONOMY
+         ========================================================= -->
+    <section id="economy">
+      <h2>💰 Economy</h2>
+
+      <blockquote><p><strong>Key Rule:</strong> If a team has no damage util, always buy <strong>light armor</strong>, because the enemies have no way to damage you besides their guns.</p></blockquote>
+
+      <h3>🗡️ Attacker</h3>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Round</th><th>Buy</th></tr></thead>
+          <tbody>
+            <tr><td>Pistol</td><td>Pistol</td></tr>
+            <tr><td>2nd</td><td>Force</td></tr>
+            <tr><td>3rd</td><td>Bonus <em>(make sure you can buy next with the guns you saved)</em></td></tr>
+            <tr><td>4th</td><td>Full</td></tr>
+            <tr><td>5th</td><td>Full</td></tr>
+            <tr><td>6th</td><td>Full</td></tr>
+            <tr><td>7th</td><td>Full</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h3>🛡️ Defender</h3>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Round</th><th>Buy</th></tr></thead>
+          <tbody>
+            <tr><td>Pistol</td><td>Pistol</td></tr>
+            <tr><td>2nd</td><td>Eco</td></tr>
+            <tr><td>3rd</td><td>Full</td></tr>
+            <tr><td>4th</td><td>Full</td></tr>
+            <tr><td>5th</td><td>Eco</td></tr>
+            <tr><td>6th</td><td>Full</td></tr>
+            <tr><td>7th</td><td>Eco</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <blockquote><p>They can force 2nd round instead of eco; then things can get weird.</p></blockquote>
+
+      <h3>💥 Force Round (Eco Guns)</h3>
+      <h4>🔫 Pistol Round</h4>
+      <ol>
+        <li><strong>Sheriff is the best</strong> because of damage.</li>
+        <li>The worst odds for a gunfight are <strong>50/50</strong>.</li>
+        <li><strong>Focus more on your aim</strong> this round than the rest.</li>
+        <li>On pistol, they <strong>don't fake a site 99% of the time</strong>.</li>
+      </ol>
+
+      <h3>📜 Economy Rules</h3>
+      <div class="rule reveal"><span class="rnum">01</span><div class="rbody"><strong>If it's risky, don't do it.</strong><br><em>e.g., pushing alone mid on eco — giving away a rifle.</em></div></div>
+      <div class="rule reveal"><span class="rnum">02</span><div class="rbody"><strong>D = Force, A = Eco</strong> (always stay with a buddy).</div></div>
+      <div class="rule reveal"><span class="rnum">03</span><div class="rbody"><strong>How to convert force rounds:</strong> make sure you have a way out if they have good initiators.</div></div>
+      <div class="rule reveal"><span class="rnum">04</span><div class="rbody"><strong>On eco rounds attacking, try to take 1v1s with a Sheriff</strong> (swing main).</div></div>
+      <div class="rule reveal"><span class="rnum">05</span><div class="rbody"><strong>Silent is powerful</strong> (5-man play contact on force or eco).</div></div>
+      <div class="rule reveal"><span class="rnum">06</span><div class="rbody"><strong>Take your range fights if guns allow</strong> (with rifles), and set up site for <strong>short range</strong> when on short-range guns (eco).</div></div>
+
+      <h3>🏆 Full Buy</h3>
+      <p>Anything works — <strong>until there is an AWP in play</strong>; then you have to change how you play.</p>
+    </section>
+
+    <!-- =========================================================
+         4. HOW TO IMPROVE
+         ========================================================= -->
+    <section id="how-to-improve">
+      <h2>📈 How to Improve</h2>
+      <blockquote><p><strong>Core Principle:</strong> Take a skill and fully focus on that skill for <strong>at least 5 games</strong>.</p></blockquote>
+
+      <!-- ===== WEEK 1 ===== -->
+      <details class="week reveal" id="week1" open>
+        <summary>🗓️ Week 1 <span class="rank-badge r-iron">Iron</span><span class="chev">▾</span></summary>
+        <div class="week-body">
+
+          <h4>AD Peek</h4>
+          <p>Peek out to an angle and try to kill, then go back. <em>(If you have to stay alive, try to jiggle back.)</em></p>
+          <ol>
+            <li>Enemies don't know about you — if you peek out, you can get shots.</li>
+            <li>Enemies are in the open — that means there are a lot of angles they should hold.</li>
+            <li>They have a lot of angles (in the open) — jiggle close, then commit.</li>
+            <li>Wide swing, and swing wider when you're in the open. <em>(Try not to swing wider-wider — do like <strong>LRLL → RLRR</strong>.)</em></li>
+            <li>If you hear them walking, you can commit out to a fight.</li>
+            <li>Swing off timings (audio cue, util usage).</li>
+          </ol>
+
+          <h4>Farming Orbs</h4>
+          <ol>
+            <li>Farm initiator ult orbs first.</li>
+            <li>Fight for orbs on attack/defense.</li>
+            <li>Util is worth an ult orb.</li>
+          </ol>
+
+          <h4>Get Cover</h4>
+          <ol>
+            <li>A lot of the map has cover — you can move around; always have cover next to / behind you.</li>
+            <li>Try to keep the number of angles open to you as low as possible.</li>
+            <li>You need to <strong>punish enemies for not taking cover</strong>.</li>
+          </ol>
+
+          <h4>The 99% Rotation (Take a Timing)</h4>
+          <ol>
+            <li>If you hear rotations, you can take that space for "free" — at least a 1v1 could take place. <em>(Pushing is risky, so make sure there is no trip or noise.)</em></li>
+            <li>If you get the kill, take the space — push it, don't go away.</li>
+          </ol>
+
+          <h4>Jiggling</h4>
+          <ol>
+            <li><strong>When to jiggle:</strong> When you think the enemy has a sniper / AWP.</li>
+            <li><strong>2 ways to jiggle:</strong> Little and big.</li>
+            <li>Try to have speed (have a "run up").</li>
+            <li>You can jiggle to throw util.</li>
+            <li>Jiggle for info when it's a "long strip like C long on Haven."</li>
+            <li>When you're not jiggling for info, jiggle gun out (to clear an angle).</li>
+            <li>Don't jiggle a wall-bangable spot — you'll get eaten.</li>
+            <li>Don't jiggle when you've already spotted 2+ people.</li>
+            <li>Don't jiggle into an AWP (trying to kill him).</li>
+            <li>You can jiggle for info, then swing for the kill.</li>
+            <li>Don't jiggle the same way 3 times.</li>
+          </ol>
+
+          <h4>Don't Pull Out Util in an Open Space</h4>
+          <ol>
+            <li>Once you have cover, use your util.</li>
+            <li>If forced to use your util, do it while unpeeking the enemy. <em>(When you have a "Tejo stun," use jumping strafing movement towards cover — then you can shoot while moving and have your gun ready at cover.)</em></li>
+            <li>Make sure your util is timed right. <em>(Throwing a flash while running that 2m, then you catch him when he is flashed.)</em></li>
+          </ol>
+
+        </div>
+      </details>
+
+      <!-- ===== WEEK 2 ===== -->
+      <details class="week reveal" id="week2">
+        <summary>🗓️ Week 2 <span class="rank-badge r-bronze">Bronze</span><span class="chev">▾</span></summary>
+        <div class="week-body">
+
+          <h4>Die A — Go B</h4>
+          <ol>
+            <li>Works best against low-rank players.</li>
+            <li>On defense, if you get kills on A site, they will rotate.</li>
+            <li>They also probably won't go that same site again.</li>
+            <li>If you get destroyed, try and play default the next round.</li>
+            <li>If you destroyed them fighting main, don't stop.</li>
+          </ol>
+
+          <h4>Flank More on Defense</h4>
+          <ol>
+            <li><strong>When you should flank:</strong> Around <strong>40% of the time</strong> — around 5 rounds a half. <em>(If there is more than one entrance to site, then you should be flanking a bit more.)</em></li>
+            <li>If they start playing to hold you, stop flanking for a while.</li>
+            <li>If your character can get past a flank trip easily, then use it more.</li>
+            <li>When flanking, it's better to <strong>hide and shoot</strong> than take the fight — depends on the scenario.</li>
+          </ol>
+
+          <h4>Force Round Buys</h4>
+          <ol>
+            <li>Buy guns after winning pistol.</li>
+            <li>The bonus is agent-specific.</li>
+            <li>If you do trust your eco guns to kill them, you can allow it. One rule to follow: if it was saved, then you can play <strong>DO NOT BUY</strong>; 4 of your teammates should be buying guns if you want to play it. If only 3 are, then you should buy as well.</li>
+          </ol>
+
+          <h4>A/D Fighting</h4>
+          <ol>
+            <li>Tap fire 2 bullets, then strafe.</li>
+            <li>Make sure to have space before swinging to get better speed.</li>
+          </ol>
+
+          <h4>Post-Plant Best Positions</h4>
+          <p>Watch the video.</p>
+
+          <h4>Fundamentals of Attack / Defense</h4>
+          <h4>Defense</h4>
+          <ol>
+            <li>Understand that a choke point is a place where, if you push through it, you can get shot from multiple directions.</li>
+            <li>You wait for someone to push the choke point, then you use util by the choke point and then you fight.</li>
+            <li>The goal is to fight for neutral space on the map at one point of the map.</li>
+            <li>Most of the time when you fight, it's to hold a choke point.</li>
+          </ol>
+          <h4>Attack</h4>
+          <ol>
+            <li>You can shift walk up the neutral space. If they aren't fighting the space, you can catch them by surprise.</li>
+            <li>You can also make noise, cut noise after baiting util like Vyse wall or smoke, then walk back and go to site.</li>
+            <li>You can also play contact where your whole team walks up slowly, and then only when you spot someone you use util and then you pop out fighting. This gives defenders less time to rotate.</li>
+          </ol>
+
+          <h4>When To Get Aggressive</h4>
+          <h4>What Does It Mean to Be Aggressive?</h4>
+          <ol>
+            <li>To go deeper and to push past the space you have.</li>
+            <li>Aggressive means you don't stop even if you don't have info — it's just about getting in there. (Pushing smokes, pushing site, pushing an angle someone is holding.)</li>
+          </ol>
+          <h4>When Is It Okay to Be Aggressive?</h4>
+          <ol>
+            <li>When you don't have util or bullets. Sometimes it's better for them to keep pushing and it's better than playing on site when they don't have util to help stall and stuff.</li>
+            <li>Another way of seeing it is showing no respect to the enemy team — just walk into their space like it's nothing, push super early, and catch them off guard. (Like being C link on Haven within the first 15 seconds.)</li>
+            <li>If someone makes contact, going for a flank is good.</li>
+            <li>If you played an entry and got deleted after doing everything "right," and then you hit other sites and still get "diffed," switch your brain off and walk in, take 1v1 fights. (Just think about winning the fight.)</li>
+            <li>If you are getting destroyed on defense, play more aggressive and push middle.</li>
+            <li>Eco rounds are also amazing times to push. Even if you force buy, take those fights — "run them down."</li>
+            <li><strong>Recap</strong> — no util, no ammo, down numbers: get aggro. When you default or if you get destroyed, switch up your playstyle. How to do it: push a smoke, take dangerous fights, run quickly and relocate, push deeper, take 1v1s, take timings, push mid or site dry.</li>
+          </ol>
+
+        </div>
+      </details>
+
+      <!-- ===== WEEK 3 ===== -->
+      <details class="week reveal" id="week3">
+        <summary>🗓️ Week 3 <span class="rank-badge r-silver">Silver</span><span class="chev">▾</span></summary>
+        <div class="week-body">
+
+          <h4>Reposition</h4>
+          <p>How to reposition:</p>
+          <ol>
+            <li>Once you get a kill while holding something, you can reposition anywhere because they will swing where you were. (Corners are good. If they saw you main, you can catch them off guard in a corner. They'll also get used to you repositioning to someplace, so swap it up to catch them off guard.)</li>
+            <li>You can also try and reposition behind them. If you saw on site, you can try flank where you know there is no trip.</li>
+          </ol>
+
+          <h4>Trading Base</h4>
+          <ol>
+            <li>Trading is when you have 2 teammates and the enemies have 1 or more teammates of their own. (If an enemy has no way of walking toward you without walking into your teammate first, then whether your teammate dies or not, it's your time to swing and have 2 people with line of sight on him.)</li>
+            <li>When to peek: look at the minimap, listen for gunshots, and follow your gut for timing.</li>
+            <li>How to trade on attacking: if you are not the Duelist, just follow your Duelist and take the fights with him/her.</li>
+            <li>For post-plants, see where your teammates are playing and then swing while they shoot your teammates.</li>
+            <li>Be aware of angles where, if your teammate dies, you can't get to that angle to help them, but you can help on another angle.</li>
+            <li>On defense, crossfires are amazing to hold when you have someone else on site with you. When in a setup, look where your teammate is and just play around them; think about how you can profit if he dies.</li>
+            <li>A way to practice trading is to follow a teammate in TDMs or try the Gauntlet gamemode, but always play behind your friend.</li>
+          </ol>
+
+          <h4>Where And When To Plant</h4>
+          <ol>
+            <li>Learn all the default plants for each map.</li>
+            <li>When to plant: if you are at equal numbers or down numbers and you see your teammate swing and is about to die while you have the spike, don't plant. Make sure to trade the Jett. (Take that 2v1 instead of planting.) If you know they used all their util, tap the spike before sticking it. Most of the time, sticking is stupid if you think about it. When there is a lot of time left and you're in a 1v3, you can tap to bait them out and push for timings. Only plant when you have map control; otherwise, take 1v1s to try and get equal numbers.</li>
+            <li>If you are sticking the spike and you see your teammate going really wide, leave the spike and swing with him. But if your teammate is playing close to you, it's better. While your teammate is defusing, prefire, jiggle, do anything to slow him down from pushing the spike.</li>
+            <li>When planting, make sure it's as open as possible when you have the space, so there are more angles to play from while defusing. (This takes map knowledge; watch a video on planting for each map.)</li>
+          </ol>
+
+          <h4>Take Space Incrementally</h4>
+          <p><strong>What to do at all times:</strong></p>
+          <ol>
+            <li>You are an attacker, and no matter where you go, follow this rule.</li>
+            <li>If you don't know what your next move is, try to think about how to clear spaces one by one.</li>
+            <li>For example, to go C there are only 4 corners to clear. Now think about the safest way to clear all of them.</li>
+            <li>You should always follow a path that makes you clear angles one by one.</li>
+            <li>This can also be known as slicing the pie, but also think about it as clearing the fog of the map.</li>
+            <li>Find your most optimal path and keep in mind where enemies could have util or crossfire plays.</li>
+            <li>You can also trade util to clear those spots on your path.</li>
+            <li>This way you can defend twice as many sites as you normally would because you're there before the other team is on site.</li>
+          </ol>
+
+          <h4>Don't Play On Site On Defense</h4>
+          <ol>
+            <li>If you are a Sentinel, the best way to play around your util is to anchor site, and you only rotate if you have info.</li>
+            <li>Now, if you are not a Sentinel, or you're an agent that doesn't have util to get out or isn't good at defending, you are probably back site or further back.</li>
+            <li>If you are not good at defending site, you should start your rounds toward middle. (You save 5 seconds on rotates, and if it's C, you are ready to stall the push.)</li>
+            <li>If you are not the person getting early info, it's better for you to play toward the middle.</li>
+          </ol>
+
+          <h4>Never Hide In A Corner</h4>
+          <ol>
+            <li>Enemies clearing the corner have an advantage when clearing you. (The person farther away from the corner sees you first.)</li>
+            <li>You are easier to pre-aim.</li>
+            <li>Never stand still in a corner; jiggle or crouch-peek jiggle—anything to throw off their crosshair.</li>
+          </ol>
+
+          <h4>Learn What Works</h4>
+          <ol>
+            <li>You can learn angles that are better for you to hold than for enemies to peek.</li>
+            <li>Learn the angles where peeking is better than holding, and where holding is better than peeking.</li>
+            <li>If you win more times playing that angle, then it works for you.</li>
+            <li>You can also learn by watching Radiant VODs.</li>
+          </ol>
+
+        </div>
+      </details>
+
+      <!-- ===== WEEK 4 ===== -->
+      <details class="week reveal" id="week4">
+        <summary>🗓️ Week 4 <span class="rank-badge r-gold">Gold</span><span class="chev">▾</span></summary>
+        <div class="week-body">
+
+          <h4>Navigating Every Position</h4>
+          <ol>
+            <li>If you're down numbers = look for 1v1s.</li>
+            <li>Want to clutch = look for 1v1s.</li>
+            <li>Up numbers = trade your teammates.</li>
+            <li>If you are winning (up lots of numbers) = look for favorable 1v1s.</li>
+            <li>Attacking equal numbers = look for fair 1v1s.</li>
+            <li>Defense equal numbers = look for advantageous fights at least.</li>
+            <li>On eco equal numbers = look for equal 1v1s.</li>
+            <li>On eco, if down numbers = look for fair 1v1s or 2v1s.</li>
+            <li>On eco, up numbers = don't die; look for at least 3v1s.</li>
+            <li>On eco = stack site; don't solo anchor.</li>
+          </ol>
+
+          <h4>1HP? — Do This!</h4>
+          <p><strong>1HP means &lt; 40 HP (and maybe &lt; 81 HP).</strong></p>
+          <ol>
+            <li><strong>Take a headshot angle.</strong> For example, you hold Heaven from Hell, and the only thing you both see is a headshot—or hold a pixel angle like mid on Sunset to hold vent from bottom right. It's a fight where both of you need to hit a headshot.</li>
+            <li><strong>Flank.</strong> Instead of staying on site or trying to anchor, go for a flank. If they already cleared mid, you get it off; if they hold you, it's fine—you were 1 HP. Instead of taking the ~20% chance to win a fight, it's 50/50 if they don't check the flank.</li>
+            <li><strong>Take a danger fight.</strong> It's a swing-and-one-tap type of fight or angle. Take the type of angle fights where you can get one-tapped or one-tap him. Don't swing an angle like a corner downstairs, because they can just spray your body around it and kill you. So common angles are better for you.</li>
+          </ol>
+
+          <h4>Give Yourself A Chance</h4>
+          <ol>
+            <li>When retaking site or slow-walking a 1v1 post-plant with about 20 seconds left, subtract 7 seconds for the spike and 2–3 seconds for a fight, leaving you around 11 seconds to clear site.</li>
+            <li>You can slow-walk clear back site so you know where he is.</li>
+            <li>If you have 40 seconds, you can't slow-walk all the way from mid—you won't have time to clear site the "safe" way you should.</li>
+            <li>If the spike is in the middle of site, you'll run out of time because there are 4 angles around you, so you have to run it down. Give yourself the chance.</li>
+            <li>In a 3v2 retake with Sova ult, you have to keep the stall util from Sova and Fade in mind, so this means you should push faster.</li>
+          </ol>
+
+          <h4>Operator Guide</h4>
+          <p>As soon as you have 4,700 credits, buy an AWP instead of a Vandal.</p>
+          <ol>
+            <li>If you aren't an agent that can play AWP—like Chamber, Raze, Neon, Jett, Reyna, Waylay, or Yoru—don't. This doesn't mean you can't, but then you need to know what you're doing. You'll know AWP is A or C long; flash them off the line or smoke to scale up and push with a flash.</li>
+            <li>An <strong>on angle</strong> is when you hold a common angle but close to the wall. If you hold an on angle with an AWP, try to make it a pixel angle so they can't really see you and you can get out.</li>
+            <li>An <strong>off angle</strong> will come with time, but sometimes with the AWP it's better to hold wider than closer because you know they'll be swinging.</li>
+            <li>If the wall is inward, attackers have the advantage swinging there, so hold wider. A long on Haven is an example, but a flat wall also counts—like Ascent.</li>
+          </ol>
+
+          <h4>When And Where To Ult</h4>
+          <ol>
+            <li>It's better to have a shit ult than not ult at all. It's better to pop ult and then go take a fight than not ult.</li>
+            <li>Veto, Reyna, and Cypher can pop ult whenever they feel like it, like at the start of the round.</li>
+            <li>Omen and Deadlock ult have to be used around info—you need info to ult, or like Omen to gain info.</li>
+            <li>Sage and Clove ults can be used if you know you can gain site because of it, and to make a 3v5 a 4v5; it's valid.</li>
+            <li>Chamber and Jett can pop it anytime you feel like it, and Neon can even pop it as they push site.</li>
+            <li>KJ, Tejo, Astra, KAY/O, Skye, Sova, Viper, Yoru, and Vyse ults should be focused on being used to execute site and/or retake site. It's also bad to do it on a 3v5 unless you guarantee a kill or round win from it.</li>
+            <li>Waylay, Raze, Gekko, Miks, Phoenix, Iso, and Breach are really strong on attack and site executes, and these ults should be used to win 1v1s. If you can win that fight because of your ult, it's worth it.</li>
+          </ol>
+
+          <h4>More Resistance — More Util</h4>
+          <ol>
+            <li>Always overuse your util early in the game, because people start so aggressive and full of ego.</li>
+            <li>If you util-dump them and condition them at the start of the game—on attack or defense half—they'll either die or back off.</li>
+            <li>If they stop pushing like they did and aren't taking the space, save your util.</li>
+            <li>If you have to work the map, burn the rechargeable abilities.</li>
+            <li>On defense, play further back at the start; don't push into their util. If you know how they play, then you can use util.</li>
+            <li>If you see util coming at you, give util back: if they flash, stun; if they use another flash, flash back and fight with your dog—anything.</li>
+            <li>The more resistance (them shooting, using util, or holding space), the more util we need to use.</li>
+            <li>If you know where 1 person is, rather take his space with util because it will cost less than where they double-swing or triple-swing.</li>
+            <li>Once you see they stop resisting—like fighting A main—only use, like, Phoenix flash instead of blind and nade, but if they Reyna blind, throw util back.</li>
+          </ol>
+
+          <h4>Mollies / Flashes / Stuns / Smokes</h4>
+          <ol>
+            <li>Mollies work with stuns.</li>
+            <li>Recon works with flashes.</li>
+            <li>Smokes work with anything.</li>
+          </ol>
+          <p>Try your best to combo utilities like this: Sova, Waylay, KAY/O, Omen. We can start her noise, then slow and molly; or drone, then flash. Smoke can help as well.</p>
+
+        </div>
+      </details>
+
+      <!-- ===== WEEK 5 ===== -->
+      <details class="week reveal" id="week5">
+        <summary>🗓️ Week 5 <span class="rank-badge r-plat">Platinum</span><span class="chev">▾</span></summary>
+        <div class="week-body">
+
+          <h4>No Util / Health — Run</h4>
+          <ol>
+            <li>Let's say a team tries to hit your site, and you use util to kill the Duelist and stall the push. If you have no more util, make an aggressive push, because you can't defend as strongly anymore—rather have a fight ready to counter them.</li>
+            <li>Before or as you lose site, push for the flank.</li>
+            <li>If you have no util or low health, take that space, shoot the trip, then come back or go flank.</li>
+            <li>If you're 1 HP as a Duelist and took damage pushing site, go flank.</li>
+            <li>If you're 1 HP, always try to open up another angle. If you flood onto site, try to get behind them or path to another angle.</li>
+            <li>If you have no util, see how you can have impact—like pushing back site with no util, but when you die, you were easily traded.</li>
+          </ol>
+
+          <h4>Clearing Angles</h4>
+          <ol>
+            <li>Before entering site, you want to clear all the front angles to have the main space, and onward if you're first—it's important.</li>
+            <li>Sometimes you can use util to clear site bit by bit using Phoenix wall, smokes, and other util.</li>
+            <li>The only time you don't want to clear an angle is when you know or think there's an AWP (remember, AWP is Outlaw if you have light shield) or a pixel angle; another easy way to clear this is with a flash.</li>
+            <li>Just have the confidence as a Duelist—anyone clearing an angle like that needs confidence. Have the mindset that you will one-tap them; if you die, you'll one-tap them all next round.</li>
+            <li>When you guys are smoked off, use util, please.</li>
+          </ol>
+
+          <h4>Smoke The Spike</h4>
+          <ol>
+            <li>This is for Controllers, but if you have util like Neon wall, Phoenix wall, or Jett smoke—anything to cover the spike.</li>
+            <li>When they are playing main, smoking the spike is stronger than smoking main because they don't know where to spam you.</li>
+          </ol>
+
+          <h4>Jump-Strafing Util</h4>
+          <ol>
+            <li>If you run around a corner and throw your util, it's scary because someone can stand there and shoot you. This is why you jump-peek and throw the util, or even jiggle.</li>
+            <li>You risk so much when you don't jump-spot. There is a chance you are going to die when you stand in the open with util, but a jump-spot can give you a chance to get out.</li>
+          </ol>
+
+          <h4>Suppressing vs. Punishing</h4>
+          <ol>
+            <li>Let's say you are a flash character (your flash is good if the enemies are in the open). If you flash and an enemy runs away, you can use your ability as suppressing "fire," because it covers for you and your team to go up. Sometimes when pushing, you can use mollies or other util to push enemies out into the open, then you can punish them with a flash.</li>
+            <li>Instead of flashing to fight CT when you have spike planted, use it as a suppressing flash to punish them running to you on the retake, or to stall retake.</li>
+            <li>Think of suppressing util as buying you a second or 2 by keeping them in a corner or keeping them from pushing you on site. Think of punishing util as going for the kill or punishing them for their mistakes.</li>
+            <li>Let's say Split: you push mid and flash as Skye, and the guy is tucked in the left corner—that's a suppressing flash to hold the guy there. You can't fight that moment; you should stop there because they could swing you. It buys you that second. If they are right side, that's a punishing flash.</li>
+            <li>If you use your util but by the time you are there the flash is worn off or the ult is worn off, it's suppressive; but if you can get the kill off that util, it's punishing util.</li>
+          </ol>
+
+          <h4>Counter 5 People Pushing</h4>
+          <p><strong>If you can't hold site, do this:</strong> Let's say you guys are playing 3 toward mid, you are alone on site, and util is coming in!</p>
+          <ol>
+            <li>Do not take the fight—like swinging main or anything. Try to get behind a smoke the enemy dropped and give them site. If you can spam the choke point through the smoke, you have a 50% chance to get that kill because they are all flooding.</li>
+            <li>If you can't spray or spam them, try to get as deep into site as you can—like Hell, Boathouse, or Drop. Or try to get a site smoke and play around it. Your job now is to delay for as long as possible until your team floods back. If you are solo anchoring, try never to play front site—always try to play as far back as possible.</li>
+            <li>Stall with your util—stun, nade, flash, anything and everything. Keep the enemies away for like 2–3 seconds; that will give enough time for rotates or to stall the team so the Duelist is alone on site.</li>
+            <li>You can spray the choke, run backsite, and then swing as your team floods in.</li>
+          </ol>
+
+          <h4>Spike 3s, 6s Rule</h4>
+          <p><strong>When they have to fuse, this is when to commit to a peek:</strong></p>
+          <ol>
+            <li>If the spike is planted in the open and it's a 1v1, don't swing after the tap. Wait 3 seconds, then you can check, because they have multiple angles to worry about. If the time is like 20 seconds, instead of 20 peeks you only have to peek 6–7 times.</li>
+            <li>Don't peek in that first second because 99.99% of the time, if the spike is in the open, he has to check—there are 4 angles.</li>
+            <li>Whenever they start to defuse the spike, they want to finish the animation—they want to complete halving the spike. That small sliver: if you swing on 3, he won't get off because he is so close. It's a small thing in the brain.</li>
+          </ol>
+          <p><strong>When to commit on the 6s mark:</strong></p>
+          <ol start="4">
+            <li>It's okay to wait 6 after the 1st tap. Then if you jiggle and it's halfed, wait 3; otherwise, wait 6.</li>
+            <li>If they are in smokes, wait like 5 seconds before you swing the smoke—you might catch them lacking.</li>
+          </ol>
+
+        </div>
+      </details>
+
+      <!-- ===== WEEK 6 ===== -->
+      <details class="week reveal" id="week6">
+        <summary>🗓️ Week 6 <span class="rank-badge r-diamond">Diamond</span><span class="chev">▾</span></summary>
+        <div class="week-body">
+
+          <h4>Advanced Trading</h4>
+          <ol>
+            <li>How to trade: you go side to side / shoulder to shoulder with your teammate.</li>
+            <li>Keep in mind who the enemy sees first. If Fade is behind you and you are close to the wall, you need to be the person trading your teammate. If you take first contact, there is a chance your Fade is late to the swing because it's a wider swing.</li>
+            <li>This can be used when holding site—like Graffiti on A site Haven, one holds when you can swing from a close angle. On attack, you can walk up to the wall, your teammate swings, then you go in and shoot.</li>
+          </ol>
+
+          <h4>2v1 Plants With Space</h4>
+          <p><strong>How to play when the enemy needs to plant:</strong></p>
+          <ol>
+            <li>It's better to have a person on each site. The reason you don't group up and go somewhere is you don't know where she is. If you can get to site by flanking or going link, just hold the site.</li>
+            <li>The other player in the 1v2 needs to clear "ghost crossfires" before he can plant, so there are a lot of angles and time that he will waste clearing them.</li>
+            <li>If you are the person in the 1v2 and you cleared site, make sure to clear every angle. If you are low on time, fast-clear but do clear. Then when you planted, reposition NOW! Push link if you want 1v1s, or go main if you can.</li>
+          </ol>
+
+          <h4>Lock-In Method</h4>
+          <ol>
+            <li>This is how to not lose focus and how to achieve flow state.</li>
+            <li>For the 5 rounds before the round starts, move your crosshair to 4 points and fully focus on the point on your crosshair.</li>
+            <li>When you hold focus past your crosshair image, you are looking 10m ahead of the crosshair. So if you hold Heaven main, think that you are standing in front of it holding it.</li>
+          </ol>
+
+          <h4>Choose Where To Push</h4>
+          <p class="soon">Notes coming soon.</p>
+
+          <h4>Check Ult Routine</h4>
+          <p class="soon">Notes coming soon.</p>
+
+          <h4>1HP. Down Numbers. No Space</h4>
+          <p><strong>When an enemy is 40 HP or below:</strong></p>
+          <ol>
+            <li>Just aim for the body.</li>
+            <li>Hold a pixel angle.</li>
+            <li>Don't take dangerous fights. Don't take 50/50s where you both can die at the same time.</li>
+            <li>You can jiggle burst fire if you feel there are more than one people holding a crossfire.</li>
+          </ol>
+          <p><strong>If you are 40 HP or below:</strong></p>
+          <ol start="5">
+            <li>You wanna take dangerous fights—take as many 50/50s as possible.</li>
+            <li>Don't hold if they are pushing you; just spam dead zone tap, and if you make contact, fall back while shooting.</li>
+            <li>If you have to retake, clear all angles one by one—don't peek 2 at the same time.</li>
+          </ol>
+
+        </div>
+      </details>
+
+      <!-- ===== WEEK 7 ===== -->
+      <details class="week reveal" id="week7">
+        <summary>🗓️ Week 7 <span class="rank-badge r-asc">Ascendant</span><span class="chev">▾</span></summary>
+        <div class="week-body">
+
+          <h4>Post-Plant Utility</h4>
+          <p><strong>Your job as attacker is where to play:</strong></p>
+          <ol>
+            <li>The less util you have, the more aggressive you should play—but not always. The closest to CT is the most dangerous angle, so the Duelist is most likely to play here depending on util.</li>
+            <li>If you have more util, you can play front site and throw util toward CT, and then you can always go behind cover near main.</li>
+            <li>The players that start in yellow and then throw util can go to the danger zone.</li>
+            <li>Post-plant is almost always main—like Brim molly, Astra pull, KJ or Sova ult, stuff like that, even Phoenix ult or Yea.</li>
+          </ol>
+
+          <h4>Panic Attack</h4>
+          <blockquote><p>Panic attack meaning you small panic when the enemy pushes you or starts fighting you.</p></blockquote>
+          <p><strong>If the enemy knows where you are (there are a lot of things you can do before they fight you):</strong></p>
+          <ol>
+            <li>You can hold a pixel angle.</li>
+            <li>If they hear you, run towards a smoke—you can spray the smoke before running into it.</li>
+            <li>Prefire all common / uncommon angles before committing to the fight.</li>
+            <li>You can spam them through the smoke as you are backing out of site.</li>
+            <li>Wall-bang them instead of peeking into "5 people."</li>
+          </ol>
+          <p><span class="pill-note">Important tip</span> Be silent unless necessary.</p>
+
+          <h4>Read Enemy Agents</h4>
+          <p class="soon">Notes coming soon.</p>
+
+          <h4>Play Solo… Until You Can't</h4>
+          <p class="soon">Notes coming soon.</p>
+
+          <h4>Catch Up And Punish</h4>
+          <p class="soon">Notes coming soon.</p>
+
+          <h4>Different Comps Briefly</h4>
+          <p class="soon">Notes coming soon.</p>
+
+          <h4>Contain And Squash</h4>
+          <p class="soon">Notes coming soon.</p>
+
+        </div>
+      </details>
+
+      <!-- ===== WEEK 8 ===== -->
+      <details class="week reveal" id="week8">
+        <summary>🗓️ Week 8 <span class="rank-badge r-immortal">Immortal</span><span class="chev">▾</span></summary>
+        <div class="week-body">
+          <h4>Defensive Position</h4><p class="soon">Notes coming soon.</p>
+          <h4>Info Timing 2 Players</h4><p class="soon">Notes coming soon.</p>
+          <h4>Minimap Decisions</h4><p class="soon">Notes coming soon.</p>
+          <h4>(3 Things) To Do After The Round</h4><p class="soon">Notes coming soon.</p>
+          <h4>Extra Gaps Of Information</h4><p class="soon">Notes coming soon.</p>
+          <h4>4 Step Process To Punish</h4><p class="soon">Notes coming soon.</p>
+          <h4>Read Players Individually</h4><p class="soon">Notes coming soon.</p>
+        </div>
+      </details>
+
+    </section>
+
+    <!-- =========================================================
+         5. MENTALITY
+         ========================================================= -->
+    <section id="mentality">
+      <h2>🧠 Mentality</h2>
+
+      <h3>🧭 General Mentality Guide</h3>
+      <ol>
+        <li>Mute text chat and enemy chat — and make it a habit to mute team when you load in.</li>
+        <li>Best response is <strong>"Sorry, I made a mistake"</strong> (don't argue).</li>
+        <li>Take breaks between games (do anything in between).</li>
+        <li>If you're confident in real life, it will show in your game.</li>
+        <li>When something goes wrong, <strong>analyze it</strong>.</li>
+      </ol>
+
+      <h3>🎈 Lower Your Expectations</h3>
+      <ol>
+        <li>Don't expect them to play correctly.</li>
+        <li>Have fun.</li>
+        <li>Don't expect them to do anything.</li>
+        <li>Don't feel pressured to go when your team is doing something stupid. <em>(Stun too early — don't feel pressured to push.)</em></li>
+      </ol>
+
+      <h3>🪨 Stay Solid</h3>
+      <ol>
+        <li>Don't blame teammates. <strong>It's always your fault.</strong></li>
+        <li>Learn how to breathe under pressure.</li>
+        <li>Don't rush yourself — play at your own pace.</li>
+      </ol>
+
+      <h3>💪 Long-Term Confidence Boost</h3>
+      <ol>
+        <li>To be confident in game, be confident in real life.</li>
+        <li>Try to stay social. If you don't really talk to people for 2 weeks, you'll be anxious.</li>
+      </ol>
+
+      <h3>😮‍💨 Remove Anxiousness In 5 Seconds</h3>
+      <ol>
+        <li>The double inhale.</li>
+        <li>Do one big inhale as much as you can, and when you feel full...</li>
+        <li>Pause.</li>
+        <li>Inhale as much as possible until you feel full.</li>
+        <li>Inhale as naturally as possible.</li>
+        <li>Exhale slowly.</li>
+      </ol>
+    </section>
+
+    <!-- =========================================================
+         6. GUNS GUIDE
+         ========================================================= -->
+    <section id="guns-guide">
+      <h2>🔫 Guns Guide</h2>
+      <p class="section-intro">Know what each gun is for — buy with a purpose, not by habit.</p>
+
+      <div class="card-grid">
+
+        <div class="card reveal">
+          <h4>🔫 Classic</h4>
+          <ol>
+            <li>Close-range fight.</li>
+            <li>You can right-click if it's any further than that; left-click.</li>
+            <li>You can also spam crouch and spray-click, and jump-spot right-click.</li>
+          </ol>
+        </div>
+
+        <div class="card reveal">
+          <h4>🔫 Shorty</h4>
+          <ol>
+            <li>If you play it, have a plan—like camp a smoke, slide into him, dash, or jump-peek and TP back.</li>
+            <li>Very close range. Also play it with an AWP.</li>
+          </ol>
+        </div>
+
+        <div class="card reveal">
+          <h4>🔫 Frenzy</h4>
+          <ol>
+            <li>If you play it, have a plan.</li>
+          </ol>
+        </div>
+
+        <div class="card reveal">
+          <h4>🔫 Ghost</h4>
+          <ol>
+            <li>You can play long range, close, and you can spray it and stuff.</li>
+            <li>Only play it on pistol.</li>
+            <li>This gun is very versatile—you can adjust it.</li>
+          </ol>
+        </div>
+
+        <div class="card reveal">
+          <h4>🔫 Bandit</h4>
+          <ol>
+            <li>Perfect for eco rounds; close-range fights like jiggle-peeking are very good.</li>
+            <li>Sometimes Bandit is good on pistol, but if you're playing long range—like top mid on Breeze to walk to bottom mid door, or a retake that's also 30m+—the Ghost would not be good here.</li>
+          </ol>
+        </div>
+
+        <div class="card reveal">
+          <h4>🔫 Sheriff</h4>
+          <ol>
+            <li>Don't commit to a fight longer than 35m.</li>
+            <li>You can jiggle-tap, go back, because body damage is enough or you might get a headshot.</li>
+            <li>It's also nice to play on an even round so you can pre-aim easily instead of flicking toward 3 angles.</li>
+          </ol>
+        </div>
+
+        <div class="card reveal">
+          <h4>🔫 Stinger</h4>
+          <ol>
+            <li>It's a faster, stronger, and better Frenzy, so also have a plan.</li>
+            <li>It's never bad for eco.</li>
+          </ol>
+        </div>
+
+        <div class="card reveal">
+          <h4>🔫 Spectre</h4>
+          <ol>
+            <li>It's a better Stinger; play it on force or eco rounds.</li>
+          </ol>
+        </div>
+
+        <div class="card reveal">
+          <h4>🔫 Bucky</h4>
+          <ol>
+            <li>If you have an angle, you can jiggle-tap; it's good for you.</li>
+            <li>If you're in an angle where they can play from long range, it's bad.</li>
+            <li>Try your best to play close range.</li>
+          </ol>
+        </div>
+
+        <div class="card reveal">
+          <h4>🔫 Judge</h4>
+          <ol>
+            <li>A better Bucky.</li>
+            <li>After the nerf, this gun is more defensive, so you can't jump-peek anymore—just A/D peek.</li>
+          </ol>
+        </div>
+
+        <div class="card reveal">
+          <h4>🔫 Bulldog</h4>
+          <ol>
+            <li>A bonus-round gun.</li>
+            <li>Holding ADS is strong; you shoot 3 bullets off so quickly.</li>
+            <li>It's like a Phantom with a Vandal—it just does 115 headshot.</li>
+          </ol>
+        </div>
+
+        <div class="card reveal">
+          <h4>🔫 Guardian</h4>
+          <ol>
+            <li>To take sharper fights, meaning you can get more gunfights done—like the Guardian's long-range fights and one-taps (needs good mechanics).</li>
+          </ol>
+        </div>
+
+        <div class="card reveal">
+          <h4>🔫 Phantom</h4>
+          <ol>
+            <li>All-around good gun.</li>
+            <li>Spray smokes? Go Phantom.</li>
+            <li>Better close range than Vandal.</li>
+          </ol>
+        </div>
+
+        <div class="card reveal">
+          <h4>🔫 Vandal</h4>
+          <ol>
+            <li>All-around good gun.</li>
+            <li>Long range? Go Vandal (30m+).</li>
+          </ol>
+        </div>
+
+        <div class="card reveal">
+          <h4>🔫 Marshal</h4>
+          <ol>
+            <li>Play it anti-eco, so after pistol round.</li>
+            <li>If you play Marshal against a buy round, you have to take early peeks and aim for the head.</li>
+            <li>The second way is A/D peek—just jiggle and try to do damage.</li>
+          </ol>
+        </div>
+
+        <div class="card reveal">
+          <h4>🔫 Outlaw</h4>
+          <ol>
+            <li>If you see the other team has less than 3900 credits, play Outlaw like an AWP.</li>
+          </ol>
+        </div>
+
+        <div class="card reveal">
+          <h4>🔫 Operator</h4>
+          <ol>
+            <li>If you play an agent that can get out after taking a shot, play it (you won't play AWP and Phoenix on attack, or AWP and Vyse on defense).</li>
+          </ol>
+        </div>
+
+        <div class="card reveal">
+          <h4>🔫 Ares / Odin</h4>
+          <ol>
+            <li>Both spray through walls; one is a gun, one is a meme—take your guess.</li>
+            <li>Ares is so much better if you can wall-bang.</li>
+            <li>The true reason for Odin is to spam a lot of walls and be able to pre-aim it.</li>
+          </ol>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- =========================================================
+         7. AIM
+         ========================================================= -->
+    <section id="aim">
+      <h2>🎯 Aim</h2>
+
+      <h3>🧪 Aim Trainer Lessons</h3>
+      <ol>
+        <li>Look at how the best players do the task and try to copy them.</li>
+        <li>Focus on accuracy — <strong>slow is smooth, and smooth is fast</strong>.</li>
+        <li>Don't put too much weight on the mouse or grip it too tightly.</li>
+        <li>Try not to keep your finger too far above the mouse button.</li>
+      </ol>
+
+      <h3>👀 Peeking Technique for High Focus and Reaction Time</h3>
+      <ol>
+        <li>Crosshair placement behind the wall — <strong>imagine the fight before you swing</strong>.</li>
+        <li>Picture <strong>1 angle</strong> where you put your crosshair, then lock in focus on those seconds of peeking.</li>
+      </ol>
+    </section>
+
+    <!-- =========================================================
+         8. SKILL MASTER
+         ========================================================= -->
+    <section id="skill-master">
+      <h2>🧬 Skill Master</h2>
+
+      <h3>📚 Learning a New Skill</h3>
+      <ol>
+        <li>Build on top of the skill you already have.</li>
+        <li>Focus on one thing for a set amount of time (e.g., 5 games focused on 1 skill like aim).</li>
+        <li>If you focus on a new thing, do it for the next set.</li>
+        <li>To link skills together, focus on the big picture for a set amount of time.</li>
+        <li>Repeat: learn 1 skill → 1 skill → do 2 at once → repeat, repeat.</li>
+      </ol>
+    </section>
+
+    <!-- =========================================================
+         9. AGENT MASTERY
+         ========================================================= -->
+    <section id="agent-mastery">
+      <h2>🧩 Agent Mastery</h2>
+
+      <h3>Why Learning an Agent Matters!</h3>
+
+      <h4>Role</h4>
+      <ol>
+        <li>Duelist, Initiator, Controller, Sentinel — they all play differently.
+          <ul>
+            <li>A <strong>Duelist</strong> has to go through the choke point.</li>
+            <li>An <strong>Initiator</strong> helps the Duelist get past that choke point by using util.</li>
+            <li>A <strong>Controller</strong> drops smokes before the Duelist goes in so there are fewer angles to worry about.</li>
+            <li>A <strong>Sentinel</strong> collects information and can have util up to make sure no one lurks.</li>
+          </ul>
+        </li>
+        <li>On defense:
+          <ul>
+            <li><strong>Initiators</strong> look for free space by using util for info where we have to clear stuff.</li>
+            <li>A <strong>Duelist</strong> can play as aggro as they want; their life matters slightly less, so they can play "how they want."</li>
+            <li>The <strong>Controller</strong> is super important because they have to smoke off choke points and stall the enemies that haven't pushed yet.</li>
+            <li>The <strong>Sentinel's</strong> job is to stop pushes and stall or get info with their lurks.</li>
+          </ul>
+        </li>
+      </ol>
+
+      <h4>Specific Utility</h4>
+      <ol>
+        <li>You can watch pro VODs to see how they use their util and see how they play.</li>
+        <li>Some pro VODs won't help you because the pro doesn't play that agent.</li>
+      </ol>
+
+      <h4>Passive / Aggressive</h4>
+      <ol>
+        <li>Based on the agent's util. Like Waylay will use her whole kit getting onto site, then she can play aggro because she has no util left. Tejo has post-plant mollies, so he is a bit more of a passive player, same with Astra.</li>
+      </ol>
+
+      <h4>Out of System</h4>
+      <ol>
+        <li>If you understand what your util does, it's going to help you much better. Out of system means using your util at other times. Like instead of Waylay stun for site, you need to know you can use it around that corner to re-clear B space for the spike. The best way is to learn at least 1 good way to execute site on each map because 90% of the time it will work out for you.</li>
+      </ol>
+
+      <h3>How to Choose Your Role</h3>
+      <div class="card reveal">
+        <h4>🎮 Controller</h4>
+        <p>The in-game explanation is the most accurate. For Controller, the hard part isn't when to throw the default smokes or how to throw the default smokes; it's coming up with creative smokes. Part of creative smokes is actually throwing a smoke to play around because you can play in it or around it. It takes an understanding of the game. If you feel like you like coming up with these plans and you have a plan that you give where you can smoke for your team to throw util and have that space, the Controller player is the foundation of the team. If you die, the enemy can abuse the fact you guys have no smokes. If you like to isolate enemies from a push, you should play Controller. Smokes on retake make life easier.</p>
+      </div>
+
+      <div class="card reveal">
+        <h4>🛡️ Sentinel</h4>
+        <p>A Sentinel, if you solo queue a lot, this is better for you. If you wanna punish bad players (they don't clear your util while rushing you can win). If you like to watch flanks for your team and like to keep your options open if pushing site doesn't work (you are playing your own game sort of because you're not with team). You can find gaps with the info you get lurking.</p>
+      </div>
+
+      <div class="card reveal">
+        <h4>📡 Initiator</h4>
+        <p>Initiators, if you like to communicate with your team. You will always find a way to make progress by using your util. If you like to stay active. You don't need crazy aim to be helpful. Initiators are better at 1v1 post-plants and they can help their team from across the map.</p>
+      </div>
+
+      <div class="card reveal">
+        <h4>⚔️ Duelist</h4>
+        <p>Duelist, you should be going to site with the initiator's util and your own util. If you wanna carry your team, a good Duelist will help the team a lot and a bad Duelist won't hurt the team as bad as other roles would. Duelist requires a lot of skill. This also helps you improve as much as possible. You can punish mistakes the best.</p>
+      </div>
+
+    </section>
+
+    <footer>
+      🎯 Valorant Training Notes — Train with intent. Review. Repeat.
+    </footer>
+
+  </main>
+</div>
+
+<button id="toTop" aria-label="Back to top">↑</button>
+
+<script>
+(function () {
+  "use strict";
+
+  /* ============================================================
+     1. SCROLL PROGRESS BAR
+     ============================================================ */
+  const progress = document.getElementById("progress");
+  const toTop = document.getElementById("toTop");
+
+  function onScroll() {
+    const doc = document.documentElement;
+    const scrollTop = window.scrollY || doc.scrollTop;
+    const height = doc.scrollHeight - doc.clientHeight;
+    const pct = height > 0 ? (scrollTop / height) * 100 : 0;
+    progress.style.width = pct + "%";
+
+    if (scrollTop > 500) toTop.classList.add("show");
+    else toTop.classList.remove("show");
+  }
+
+  window.addEventListener("scroll", onScroll, { passive: true });
+  onScroll();
+
+  toTop.addEventListener("click", () => {
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  });
+
+  /* ============================================================
+     2. REVEAL ON SCROLL
+     ============================================================ */
+  const revealEls = document.querySelectorAll(".reveal");
+
+  if ("IntersectionObserver" in window) {
+    const revealObserver = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) {
+            entry.target.classList.add("in");
+            revealObserver.unobserve(entry.target);
+          }
+        });
+      },
+      { threshold: 0.08, rootMargin: "0px 0px -60px 0px" }
+    );
+    revealEls.forEach((el) => revealObserver.observe(el));
+  } else {
+    revealEls.forEach((el) => el.classList.add("in"));
+  }
+
+  /* ============================================================
+     3. SCROLL SPY — highlight active TOC link
+     ============================================================ */
+  const allLinks = Array.from(document.querySelectorAll(".toc a[href^='#']"));
+  const linkMap = new Map();
+
+  allLinks.forEach((link) => {
+    const id = link.getAttribute("href").slice(1);
+    const target = document.getElementById(id);
+    if (target) linkMap.set(target, link);
+  });
+
+  const spyTargets = Array.from(linkMap.keys());
+
+  function updateActive() {
+    const scrollPos = window.scrollY + 140;
+    let current = null;
+
+    spyTargets.forEach((target) => {
+      if (target.offsetTop <= scrollPos) current = target;
+    });
+
+    if (!current && spyTargets.length) current = spyTargets[0];
+
+    allLinks.forEach((l) => l.classList.remove("active"));
+
+    if (current) {
+      const activeLink = linkMap.get(current);
+      if (activeLink) {
+        activeLink.classList.add("active");
+
+        // Open the parent submenu if the active link is nested
+        const parentLi = activeLink.closest(".has-sub");
+        if (parentLi) parentLi.classList.add("open");
+
+        // Keep the active link visible inside the sidebar
+        const sidebar = document.getElementById("sidebar");
+        const linkRect = activeLink.getBoundingClientRect();
+        const sideRect = sidebar.getBoundingClientRect();
+        if (linkRect.top < sideRect.top + 60 || linkRect.bottom > sideRect.bottom - 60) {
+          activeLink.scrollIntoView({ block: "nearest", behavior: "smooth" });
+        }
+      }
+    }
+  }
+
+  window.addEventListener("scroll", updateActive, { passive: true });
+  window.addEventListener("resize", updateActive);
+  updateActive();
+
+  /* ============================================================
+     4. AUTO-OPEN WEEK ACCORDION WHEN LINKED
+     ============================================================ */
+  document.querySelectorAll('a[href^="#week"]').forEach((link) => {
+    link.addEventListener("click", () => {
+      const id = link.getAttribute("href").slice(1);
+      const det = document.getElementById(id);
+      if (det && det.tagName === "DETAILS") det.open = true;
+      closeMobileNav();
+    });
+  });
+
+  /* ============================================================
+     5. EXPAND / COLLAPSE ALL WEEKS
+     ============================================================ */
+  const expandBtn = document.getElementById("expandAll");
+  const weeks = Array.from(document.querySelectorAll("details.week"));
+  let allOpen = false;
+
+  expandBtn.addEventListener("click", () => {
+    allOpen = !allOpen;
+    weeks.forEach((w) => (w.open = allOpen));
+    expandBtn.textContent = allOpen ? "Collapse Weeks" : "Expand Weeks";
+  });
+
+  /* ============================================================
+     6. MOBILE NAVIGATION
+     ============================================================ */
+  const menuToggle = document.getElementById("menuToggle");
+  const sidebar = document.getElementById("sidebar");
+  const overlay = document.getElementById("overlay");
+
+  function openMobileNav() {
+    sidebar.classList.add("open");
+    overlay.classList.add("show");
+    document.body.classList.add("nav-open");
+  }
+
+  function closeMobileNav() {
+    sidebar.classList.remove("open");
+    overlay.classList.remove("show");
+    document.body.classList.remove("nav-open");
+  }
+
+  menuToggle.addEventListener("click", () => {
+    sidebar.classList.contains("open") ? closeMobileNav() : openMobileNav();
+  });
+
+  overlay.addEventListener("click", closeMobileNav);
+
+  // Close mobile nav when any TOC link is clicked
+  document.querySelectorAll(".toc a").forEach((a) => {
+    a.addEventListener("click", () => {
+      if (window.innerWidth <= 980) closeMobileNav();
+    });
+  });
+
+  // Escape closes the mobile nav
+  document.addEventListener("keydown", (e) => {
+    if (e.key === "Escape") closeMobileNav();
+  });
+
+  // Reset nav state on resize to desktop
+  window.addEventListener("resize", () => {
+    if (window.innerWidth > 980) closeMobileNav();
+  });
+
+  /* ============================================================
+     7. SMOOTH SCROLL FALLBACK (for older browsers)
+     ============================================================ */
+  document.querySelectorAll('a[href^="#"]').forEach((anchor) => {
+    anchor.addEventListener("click", function (e) {
+      const id = this.getAttribute("href");
+      if (id === "#" || id.length < 2) return;
+      const target = document.querySelector(id);
+      if (!target) return;
+      e.preventDefault();
+      const offset = 88;
+      const top = target.getBoundingClientRect().top + window.scrollY - offset;
+      window.scrollTo({ top, behavior: "smooth" });
+      history.replaceState(null, "", id);
+    });
+  });
+})();
+</script>
+</body>
+</html>
