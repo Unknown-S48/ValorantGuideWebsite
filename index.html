@@ -1,0 +1,724 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Core Game Logic — Valorant Notes</title>
+<style>
+  :root {
+    --bg: #0e1116;
+    --bg-2: #151a22;
+    --bg-3: #1b2230;
+    --text: #e6e9ef;
+    --muted: #98a2b3;
+    --accent: #ff4655;
+    --accent-2: #22d3ee;
+    --border: #26303f;
+    --radius: 10px;
+  }
+
+  * { box-sizing: border-box; }
+
+  html { scroll-behavior: smooth; scroll-padding-top: 1.5rem; }
+
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--text);
+    font-family: system-ui, -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    line-height: 1.65;
+    font-size: 16px;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  /* ---------- Layout ---------- */
+  .layout {
+    display: grid;
+    grid-template-columns: 270px minmax(0, 1fr);
+    gap: 2.5rem;
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: 2rem 1.5rem 5rem;
+  }
+
+  /* ---------- Sidebar / Nav ---------- */
+  .sidebar {
+    position: sticky;
+    top: 1.5rem;
+    align-self: start;
+    max-height: calc(100vh - 3rem);
+    overflow-y: auto;
+    padding-right: 0.5rem;
+  }
+
+  .sidebar::-webkit-scrollbar { width: 6px; }
+  .sidebar::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+
+  .brand {
+    font-size: 0.75rem;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--accent);
+    font-weight: 700;
+    margin-bottom: 0.25rem;
+  }
+
+  .brand-sub {
+    font-size: 0.75rem;
+    color: var(--muted);
+    margin-bottom: 1.25rem;
+  }
+
+  .nav-title {
+    font-size: 0.7rem;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin: 1.25rem 0 0.5rem;
+  }
+
+  nav ul {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    border-left: 2px solid var(--border);
+  }
+
+  nav li { margin: 0; }
+
+  nav a {
+    display: block;
+    padding: 0.35rem 0.75rem;
+    color: var(--muted);
+    text-decoration: none;
+    font-size: 0.875rem;
+    border-left: 2px solid transparent;
+    margin-left: -2px;
+    transition: color .15s, border-color .15s, background .15s;
+  }
+
+  nav a:hover { color: var(--text); background: var(--bg-2); }
+
+  nav a.active {
+    color: var(--accent);
+    border-left-color: var(--accent);
+    font-weight: 600;
+    background: var(--bg-2);
+  }
+
+  nav a.sub { padding-left: 1.5rem; font-size: 0.82rem; }
+
+  /* ---------- Content ---------- */
+  main { min-width: 0; }
+
+  header.page-head {
+    border-bottom: 2px solid var(--border);
+    padding-bottom: 1.5rem;
+    margin-bottom: 2.5rem;
+  }
+
+  header.page-head h1 {
+    font-size: clamp(1.9rem, 4vw, 2.8rem);
+    margin: 0 0 0.4rem;
+    letter-spacing: -0.02em;
+    line-height: 1.15;
+  }
+
+  header.page-head h1 span { color: var(--accent); }
+
+  header.page-head p {
+    margin: 0;
+    color: var(--muted);
+    max-width: 70ch;
+  }
+
+  section { margin-bottom: 3.5rem; scroll-margin-top: 1rem; }
+
+  h2 {
+    font-size: 1.5rem;
+    margin: 0 0 1rem;
+    padding-bottom: 0.5rem;
+    border-bottom: 1px solid var(--border);
+    letter-spacing: -0.01em;
+  }
+
+  h2 .num {
+    color: var(--accent);
+    font-size: 0.85rem;
+    font-variant-numeric: tabular-nums;
+    margin-right: 0.6rem;
+    vertical-align: 0.15em;
+    opacity: 0.85;
+  }
+
+  h3 {
+    font-size: 1.12rem;
+    margin: 2rem 0 0.75rem;
+    color: var(--accent-2);
+    letter-spacing: 0.01em;
+  }
+
+  h3:first-of-type { margin-top: 1rem; }
+
+  p { margin: 0 0 1rem; }
+
+  strong { color: #fff; font-weight: 650; }
+
+  ul, ol { margin: 0 0 1rem; padding-left: 1.35rem; }
+
+  li { margin-bottom: 0.55rem; }
+
+  li::marker { color: var(--accent); }
+
+  ol.rules > li::marker { font-weight: 700; }
+
+  /* Inline highlight */
+  .hl { color: var(--accent-2); font-weight: 600; }
+
+  /* ---------- Tables ---------- */
+  .table-wrap {
+    overflow-x: auto;
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    margin: 1rem 0 1.5rem;
+    background: var(--bg-2);
+  }
+
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.9rem;
+    min-width: 320px;
+  }
+
+  thead th {
+    background: var(--bg-3);
+    text-align: left;
+    padding: 0.7rem 1rem;
+    font-size: 0.72rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--muted);
+    border-bottom: 1px solid var(--border);
+    white-space: nowrap;
+  }
+
+  tbody td {
+    padding: 0.65rem 1rem;
+    border-bottom: 1px solid var(--border);
+    vertical-align: top;
+  }
+
+  tbody tr:last-child td { border-bottom: none; }
+
+  tbody tr:nth-child(even) { background: rgba(255,255,255,0.02); }
+
+  tbody tr:hover { background: rgba(255,70,85,0.06); }
+
+  td:first-child { white-space: nowrap; font-weight: 600; color: #fff; }
+
+  .table-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 1.25rem;
+  }
+
+  /* ---------- Callouts ---------- */
+  .callout {
+    border-left: 3px solid var(--accent);
+    background: var(--bg-2);
+    padding: 0.85rem 1.1rem;
+    border-radius: 0 var(--radius) var(--radius) 0;
+    margin: 1rem 0 1.5rem;
+    color: var(--text);
+    font-size: 0.95rem;
+  }
+
+  .callout.info { border-left-color: var(--accent-2); }
+  .callout strong { color: var(--accent); }
+  .callout.info strong { color: var(--accent-2); }
+
+  /* ---------- Misc ---------- */
+  .pill {
+    display: inline-block;
+    font-size: 0.68rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    background: var(--bg-3);
+    color: var(--muted);
+    border: 1px solid var(--border);
+    border-radius: 999px;
+    padding: 0.1rem 0.55rem;
+    vertical-align: 0.15em;
+    font-weight: 700;
+  }
+
+  footer {
+    border-top: 1px solid var(--border);
+    padding-top: 1.5rem;
+    color: var(--muted);
+    font-size: 0.85rem;
+  }
+
+  /* ---------- Responsive ---------- */
+  @media (max-width: 900px) {
+    .layout {
+      grid-template-columns: 1fr;
+      gap: 1.5rem;
+      padding: 1.25rem 1rem 4rem;
+    }
+    .sidebar {
+      position: static;
+      max-height: none;
+      overflow: visible;
+      border-bottom: 1px solid var(--border);
+      padding-bottom: 1rem;
+    }
+    nav ul { display: flex; flex-wrap: wrap; border-left: none; gap: 0.25rem; }
+    nav a {
+      border-left: none;
+      border: 1px solid var(--border);
+      border-radius: 999px;
+      padding: 0.3rem 0.75rem;
+      margin-left: 0;
+    }
+    nav a.active { border-color: var(--accent); }
+    nav a.sub { padding-left: 0.75rem; }
+    td:first-child { white-space: normal; }
+  }
+
+  @media print {
+    .sidebar { display: none; }
+    .layout { display: block; max-width: none; }
+    body { background: #fff; color: #000; }
+    h2, h3, strong, td:first-child { color: #000; }
+    .table-wrap { border-color: #ccc; }
+  }
+</style>
+</head>
+<body>
+
+<div class="layout">
+
+  <!-- ================= SIDEBAR ================= -->
+  <aside class="sidebar">
+    <div class="brand">Valorant</div>
+    <div class="brand-sub">Core Game Logic · Field Manual</div>
+
+    <div class="nav-title">Contents</div>
+    <nav>
+      <ul>
+        <li><a href="#core">Core Game Logic</a></li>
+        <li><a href="#prep">Prep, Aim, Warmup</a></li>
+        <li><a href="#movement">Movement &amp; Peeking</a></li>
+        <li><a href="#gunplay">Gunplay &amp; Economy</a></li>
+        <li><a href="#rounds">Round Flow &amp; Decisions</a></li>
+        <li><a href="#attack" class="sub">Attack</a></li>
+        <li><a href="#defense" class="sub">Defense</a></li>
+        <li><a href="#trading" class="sub">Trading</a></li>
+        <li><a href="#info" class="sub">Info &amp; Minimap</a></li>
+        <li><a href="#numbers" class="sub">Numbers, HP, Clutches</a></li>
+        <li><a href="#after-round" class="sub">After the Round</a></li>
+        <li><a href="#utility">Utility &amp; Ults</a></li>
+        <li><a href="#agents">Agents</a></li>
+        <li><a href="#improvement">Improvement Method</a></li>
+        <li><a href="#mentality">Mentality &amp; Solo Q</a></li>
+        <li><a href="#ranks">Rank Progression</a></li>
+        <li><a href="#open-questions">Open Questions</a></li>
+      </ul>
+    </nav>
+  </aside>
+
+  <!-- ================= MAIN ================= -->
+  <main>
+
+    <header class="page-head">
+      <h1>Core Game Logic<span>.</span></h1>
+      <p>A working manual of Valorant principles — peeking, trading, economy, utility, round flow and mentality — organised from first principles down to rank-by-rank progression.</p>
+    </header>
+
+    <!-- ---------- CORE ---------- -->
+    <section id="core">
+      <h2><span class="num">01</span>Core Game Logic</h2>
+      <ol class="rules">
+        <li><strong>Peeker's advantage is real</strong> — the swinger sees the holder first, so holding is only good when the angle favors you (pixel, off angle) or someone trades you. This is why swing wider in the open, jiggle before committing, and hold wider with an AWP.</li>
+        <li><strong>You only die to an angle you haven't cleared</strong> — so clear one at a time (slice the pie) and use util to delete angles (smoke, flash, molly).</li>
+        <li><strong>Trades beat 1v1s</strong> — two guns with line of sight on one target wins; hence shoulder-to-shoulder trading, following your Duelist, and playing around a teammate's death.</li>
+        <li><strong>Utility buys space and time, not kills</strong> — suppressing util moves enemies or keeps them back; punishing util converts a mistake. If you use util and nobody moves, you bought nothing.</li>
+        <li><strong>Info beats guessing</strong> — jiggle, drone, recon, read habits; every guess is a coinflip you didn't have to take.</li>
+        <li><strong>Economy is math, not mood</strong> — 3900/4700 thresholds, light armor vs no-damage util, force/bonus/eco are pre-planned.</li>
+        <li><strong>Animation locks lose rounds</strong> — defusing, planting, Jett dash recovery, pulling out util: each is a window the enemy swings on.</li>
+        <li><strong>Habits are readable — yours too</strong> — enemies repeat lurks, rotates, and jiggle patterns; swap yours (Die A go B, never jiggle the same way 3×).</li>
+        <li><strong>Disadvantage is a signal to change the game</strong> — down numbers, no util, or 1HP means stop holding: take 1v1s, flank, or push.</li>
+      </ol>
+    </section>
+
+    <!-- ---------- PREP ---------- -->
+    <section id="prep">
+      <h2><span class="num">02</span>Prep, Aim, Warmup</h2>
+      <ul>
+        <li><strong>Body first:</strong> sleep, water, food, exercise — because performance is physical before it's mechanical.</li>
+        <li><strong>Wrist warm-ups</strong> before playing — get blood to the hands so your first aim duels aren't cold.</li>
+        <li><strong>Warmup procedure:</strong> 1) <strong>10 min Range</strong> on bots controlling the <strong>Phantom spray</strong> to learn the gun; 2) <strong>2–3 DMs</strong>.</li>
+        <li><strong>Aim routine (100% accuracy on every step):</strong>
+          <ol>
+            <li>5 bots — long strafe, track the head, counter-strafe, mix short strafes;</li>
+            <li>strafe, track, shoot, flick to a 2nd bot, rapidly;</li>
+            <li>stand far back, range shots outside the doorway;</li>
+            <li>track all 5 bots 30s each, no shooting.</li>
+          </ol>
+        </li>
+        <li><strong>Aim trainer lessons:</strong> copy how the best players do the task; <strong>slow is smooth, smooth is fast</strong>; light grip; finger not far above the mouse button.</li>
+        <li><strong>Peek focus:</strong> crosshair placement behind the wall and <strong>imagine the fight before you swing</strong>; picture <strong>1 angle</strong>, lock focus for those seconds.</li>
+        <li><strong>Lock-in method (pre-round):</strong> move your crosshair to 4 points and fully focus on the point on your crosshair — holding focus past the crosshair image means you're looking <strong>10m ahead</strong> (holding Heaven main, think you're standing in front of it).</li>
+      </ul>
+    </section>
+
+    <!-- ---------- MOVEMENT ---------- -->
+    <section id="movement">
+      <h2><span class="num">03</span>Movement, Peeking, Jiggling, Clearing</h2>
+      <ul>
+        <li><strong>AD peek:</strong> peek an angle, try to kill, go back — if you must live, jiggle back.</li>
+        <li><strong>Swing wider when you're in the open</strong> — more of their angles open at once; use <strong>LRLL → RLRR</strong>, don't go wider-wider.</li>
+        <li><strong>Commit on audio:</strong> <strong>when you hear them walking:</strong> commit out to the fight — because they can't hear your swing coming.</li>
+        <li><strong>Swing off timings</strong> (audio cue, util usage) — because a swing while they're locked in util or sound is a free first shot.</li>
+        <li><strong>Get a run-up before swinging</strong> — speed beats their crosshair placement; tap <strong>2 bullets then strafe</strong> in A/D fights.</li>
+        <li><strong>Burst fire, don't spray; don't always crouch</strong> — crouching is a commitment you can't unmake, so learn to shoot standing.</li>
+        <li><strong>Get cover first, then util</strong> — if forced, use util while unpeeking (jump-strafe toward cover with gun ready) — because standing in the open with util is a free kill.</li>
+        <li><strong>Jump-strafe util:</strong> jump-peek and throw — because it gives you a chance to get out where standing still doesn't.</li>
+        <li><strong>Jiggle:</strong>
+          <ol>
+            <li><strong>When they have a sniper/AWP:</strong> jiggle — because you can't out-duel a one-shot without info.</li>
+            <li>Two sizes: little and big; get a run-up for speed.</li>
+            <li>Jiggle to throw util, for info on long strips (Haven C long), and gun-out to clear.</li>
+            <li><strong>Don't</strong> jiggle a wall-bangable spot, after spotting 2+ people, or into an AWP trying to kill him.</li>
+            <li>Jiggle for info <strong>then</strong> swing for the kill; never the same way 3×.</li>
+          </ol>
+        </li>
+        <li><strong>Never hide in a corner:</strong> the player farther from the corner sees you first and you're easy to pre-aim — jiggle or crouch-peek jiggle instead.</li>
+        <li><strong>Clear incrementally:</strong> before site, clear all front angles; use util to clear bit by bit; <strong>don't clear</strong> an AWP or pixel angle — flash it instead; when smoked off, use util.</li>
+        <li><strong>Take space like slicing the pie:</strong> C has only 4 corners — find the safest path that clears them one by one, and trade util for the spots you can't clear safely. This is how you pressure two sites at once.</li>
+      </ul>
+    </section>
+
+    <!-- ---------- GUNPLAY ---------- -->
+    <section id="gunplay">
+      <h2><span class="num">04</span>Gunplay and Economy</h2>
+
+      <h3>Buy Tables</h3>
+      <div class="table-grid">
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr><th>Attacker</th><th>Buy</th></tr>
+            </thead>
+            <tbody>
+              <tr><td>Pistol</td><td>Pistol</td></tr>
+              <tr><td>2nd</td><td>Force</td></tr>
+              <tr><td>3rd</td><td>Bonus (make sure you can buy next with the guns you saved)</td></tr>
+              <tr><td>4th–7th</td><td>Full</td></tr>
+            </tbody>
+          </table>
+        </div>
+
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr><th>Defender</th><th>Buy</th></tr>
+            </thead>
+            <tbody>
+              <tr><td>Pistol</td><td>Pistol</td></tr>
+              <tr><td>2nd</td><td>Eco</td></tr>
+              <tr><td>3rd</td><td>Full</td></tr>
+              <tr><td>4th</td><td>Full</td></tr>
+              <tr><td>5th</td><td>Eco</td></tr>
+              <tr><td>6th</td><td>Full</td></tr>
+              <tr><td>7th</td><td>Eco</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <div class="callout info">
+        Defenders can force 2nd instead of eco; then things get weird.
+      </div>
+
+      <h3>Economy Rules</h3>
+      <ul>
+        <li><strong>Key rule:</strong> if the enemy has <strong>no damage util</strong>, buy <strong>light armor</strong> — their only damage is guns.</li>
+        <li><strong>Full buy:</strong> anything works <strong>until there's an AWP in play</strong>, then your positions and peeks must change.</li>
+        <li><strong>Force round (eco guns):</strong> Sheriff is best (damage); worst odds are <strong>50/50</strong>; focus on aim over everything; on pistol they <strong>don't fake a site 99%</strong> of the time.</li>
+        <li><strong>Economy rules:</strong>
+          <ol>
+            <li>If it's risky, don't — pushing alone mid on eco gives away a rifle.</li>
+            <li><strong>D = force, A = eco</strong> (stay with a buddy).</li>
+            <li>On force, have a way out vs good initiators.</li>
+            <li>On attack eco, take <strong>1v1s with a Sheriff</strong> (swing main).</li>
+            <li>Silence is powerful — 5-man contact on force/eco.</li>
+            <li>Take range fights if guns allow (rifles); set up <strong>short range</strong> on short-range guns.</li>
+          </ol>
+        </li>
+        <li><strong>Force buy check:</strong> if the gun was saved you can <strong>DO NOT BUY</strong>, but only if 4 teammates are buying; with 3, buy too — because a lone rifle in an eco fight is a gift.</li>
+      </ul>
+
+      <h3>Guns</h3>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr><th>Gun</th><th>Play it when / constraint</th></tr>
+          </thead>
+          <tbody>
+            <tr><td>Classic</td><td>Close range; right-click beyond; spam-crouch and jump-spot right-click.</td></tr>
+            <tr><td>Shorty</td><td>Very close; only with a plan (camp smoke, slide, dash, jump-peek TP); pairs with AWP.</td></tr>
+            <tr><td>Frenzy</td><td>Have a plan.</td></tr>
+            <tr><td>Ghost</td><td>Pistol only; versatile at any range, sprayable.</td></tr>
+            <tr><td>Bandit</td><td>Eco, close-range jiggle-peeks. (Not a standard Valorant gun — see Open Questions.)</td></tr>
+            <tr><td>Sheriff</td><td>Don't commit past <strong>35m</strong>; jiggle-tap — body damage is enough; best on even rounds for pre-aim.</td></tr>
+            <tr><td>Stinger</td><td>Faster, stronger Frenzy; never bad on eco.</td></tr>
+            <tr><td>Spectre</td><td>Better Stinger; force or eco.</td></tr>
+            <tr><td>Bucky</td><td>Jiggle-tap on an angle; bad at long range — play close.</td></tr>
+            <tr><td>Judge</td><td>Better Bucky; post-nerf defensive — A/D peek only, no jump-peek.</td></tr>
+            <tr><td>Bulldog</td><td>Bonus-round gun; ADS 3-bullet burst is strong; <strong>115 headshot</strong>.</td></tr>
+            <tr><td>Guardian</td><td>Sharper fights and one-taps (needs mechanics).</td></tr>
+            <tr><td>Phantom</td><td>All-around; spray smokes; better close range than Vandal.</td></tr>
+            <tr><td>Vandal</td><td>All-around; <strong>30m+</strong> long range.</td></tr>
+            <tr><td>Marshal</td><td>Anti-eco, after pistol; vs a buy round, early peeks for the head or A/D peek.</td></tr>
+            <tr><td>Outlaw</td><td><strong>If enemy has &lt;3900 credits:</strong> play it like an AWP.</td></tr>
+            <tr><td>Operator</td><td>Only on agents with a free escape after the shot (Jett, Chamber, Yoru, Waylay) — because it's one-shot-then-reposition; no escape means you die on the reload. That's why Jett works and Phoenix/Vyse don't.</td></tr>
+            <tr><td>Ares / Odin</td><td>Wall-bang spam; Ares if you can wall-bang, Odin to spam many walls with pre-aim.</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <ul>
+        <li><strong>AWP trigger:</strong> at <strong>4700 credits</strong> buy the AWP over a Vandal — if your agent can escape. Without an escape, you need a plan: flash them off the line or smoke up and push with a flash.</li>
+        <li><strong>On angle with AWP:</strong> make it a <strong>pixel angle</strong> so they can't see you and you can get out. <strong>Off angle:</strong> hold wider than closer when you know they'll swing.</li>
+        <li><strong>Inward wall:</strong> attackers have the swing advantage, so hold wider (Haven A long; flat wall like Ascent also counts).</li>
+        <li><strong>Your call: just play Phantom</strong> (even with a skin) — your stated reasons are close range and smoke spray; the Vandal 30m+ rule above stays.</li>
+      </ul>
+    </section>
+
+    <!-- ---------- ROUND FLOW ---------- -->
+    <section id="rounds">
+      <h2><span class="num">05</span>Round Flow and Decisions</h2>
+
+      <h3 id="attack">Attack</h3>
+      <ul>
+        <li><strong>Shift-walk neutral space</strong> — if they aren't fighting it, you catch them by surprise.</li>
+        <li><strong>Bait util, cut noise, walk back, then hit site</strong> — because their util is now spent on nothing.</li>
+        <li><strong>Contact:</strong> whole team walks up slowly, util only on contact, then swing — because defenders get less rotation time.</li>
+        <li><strong>Plant timing:</strong> plant only with map control; otherwise take 1v1s for equal numbers. <strong>When</strong> a teammate is about to die and you have spike: trade the Jett for the 2v1 instead of planting. Tap before sticking if they've used all util; sticking is usually stupid; in a 1v3 with time, tap to bait timings.</li>
+        <li><strong>If a teammate goes wide while you stick:</strong> leave spike and swing — 2 guns beat a planted spike. While a teammate defuses, prefire/jiggle to slow the push.</li>
+        <li><strong>Plant open when you have space</strong> — more angles for you while defusing (learn per-map plant spots).</li>
+        <li><strong>Post-plant:</strong> less util → play more aggressive (closest to CT is the most dangerous angle, usually the Duelist); more util → front site, throw util toward CT, then cover near main. Post-plant util is almost always <strong>main</strong> (Brim molly, Astra pull, KJ/Sova ult, Phoenix ult). <em>(Post-plant best positions: watch the video.)</em></li>
+      </ul>
+
+      <h3 id="defense">Defense</h3>
+      <ul>
+        <li><strong>Choke point logic:</strong> wait for someone to push, util the choke, then fight — most fights are to hold a choke point. Fight for neutral space at one point of the map.</li>
+        <li><strong>Don't play on site unless you're a Sentinel:</strong> Sentinels anchor and rotate only on info; everyone else plays back site or toward mid — that saves <strong>5 seconds</strong> on rotates and lets you stall.</li>
+        <li><strong>Flank ~40% of the time (about 5 rounds a half);</strong> more if site has multiple entrances. If they start holding you, stop for a while. Hide-and-shoot beats taking the fight.</li>
+        <li><strong>Die A → go B</strong> (best vs low ranks): kills on A make them rotate and they usually won't re-hit A; if you got destroyed, play default next round; if you destroyed them at main, don't stop.</li>
+        <li><strong>Counter a 5-man push:</strong> give them site behind their smoke and spam the choke (~50% kill through it); if you can't, go deep (Hell, Boathouse, Drop) or play around a site smoke; stall <strong>2–3 seconds</strong> with any util for rotates; then swing as your team floods. Solo anchor = never front site.</li>
+        <li><strong>Set plays are fine — repeating them is not:</strong> pick up the pattern in the first <strong>4 rounds</strong> (Elbo R1 and R3, same trips, Jett market R4) — a repeatable setup is a pre-aimable one.</li>
+        <li><strong>Rotate your positions every few rounds:</strong> <strong>Sentinel</strong> back site or front site, different trips every <strong>3rd round</strong>; <strong>Duelist</strong> passive → aggro main → mid, never the same site; <strong>Initiator</strong> plays with the Duelist or swaps places with him / goes main with the Sentinel, and uses <strong>3 different scans</strong> instead of the same dart/eye; <strong>Controller</strong> anywhere — just switch it up.</li>
+        <li><strong>Attack version:</strong> don't lurk the same spot every round, try stacking sites; let them learn you lurk solo, then run <strong>4 contact + 1 fake noise</strong>. If something works <strong>2–3 times</strong>, change it once — make the game feel as different as possible.</li>
+      </ul>
+
+      <h3 id="trading">Trading</h3>
+      <ul>
+        <li><strong>Trading base:</strong> if an enemy can't reach you without walking into your teammate first, swing the moment your teammate takes contact — two guns on one target wins. Peek on minimap, gunshots, gut.</li>
+        <li><strong>Attack:</strong> non-Duelists follow the Duelist. <strong>Post-plant:</strong> swing while they shoot your teammate. <strong>Defense:</strong> crossfires on site — play around your teammate and profit if he dies.</li>
+        <li><strong>Advanced:</strong> go side-to-side/shoulder-to-shoulder; the close-to-wall player trades because the enemy sees him first and a wide swing arrives late (Haven A graffiti hold; attack: walk to wall, teammate swings, you follow in).</li>
+        <li><strong>Practice:</strong> follow a friend in TDM or Gauntlet, always behind him.</li>
+        <li><strong>After a kill, reposition</strong> (corners, behind them) — because they'll swing where you were; swap the spot so they can't pre-aim your habit.</li>
+      </ul>
+
+      <h3 id="info">Info and Minimap</h3>
+      <ul>
+        <li><strong>Comm counts, not "all":</strong> you can tell 2 from 4 people spamming a smoke — call "1 is spamming" or "at least 2 main," escalate to "at least 3," never "all 4" — because overcounting sends rotates the wrong way. Count only spam and util.</li>
+        <li><strong>Sniff fakes by delay:</strong> spam and util have a solid delay between them — util with no preceding spam (or the reverse) is the tell.</li>
+        <li><strong>Pick the site by util count:</strong> if util says 3–4 are here, hit the site with 1. (Trip broken + drone + Chamber seen → 2 CT and 1 flank → wrap link on that timing.)</li>
+        <li><strong>Your own path reveals the map:</strong> if your team lurked up or came from mid, the space behind them is clear — how else would they be alive? Play the map, but watch timings in the gaps you left too long.</li>
+      </ul>
+
+      <h3 id="numbers">Numbers, HP, and Clutches</h3>
+      <ul>
+        <li><strong>When down numbers or clutching:</strong> look for <strong>1v1s</strong>. <strong>When up numbers:</strong> trade teammates. <strong>When way up:</strong> favorable 1v1s. <strong>Equal numbers on attack:</strong> fair 1v1s. <strong>Equal on defense:</strong> advantageous fights only. <strong>Eco equal:</strong> equal 1v1s; <strong>eco down:</strong> fair 1v1s or 2v1s; <strong>eco up:</strong> don't die, take 3v1s. <strong>On eco:</strong> stack site, don't solo anchor.</li>
+        <li><strong>When the enemy is ≤40 HP:</strong> aim body, hold a pixel angle, no 50/50s; jiggle-burst if multiple hold a crossfire.</li>
+        <li><strong>When you are ≤40 HP:</strong> take 50/50s, spam dead-zone taps and fall back shooting, and clear angles one at a time.</li>
+        <li><strong>1HP plays:</strong>
+          <ol>
+            <li>headshot/pixel angle — both of you must hit the head;</li>
+            <li>flank — 50/50 if unchecked beats ~20% in a straight fight;</li>
+            <li>danger fight — a swing-and-one-tap angle, not a corner they can body-spray around.</li>
+          </ol>
+        </li>
+        <li><strong>Give yourself a chance:</strong> with <strong>20s</strong> left, subtract <strong>7s</strong> spike + <strong>2–3s</strong> fight → ~<strong>11s</strong> to clear; <strong>40s</strong> isn't enough to slow-walk from mid; spike mid-site (4 angles) means run it down; a 3v2 retake vs Sova ult means push faster.</li>
+        <li><strong>When you have no util or low HP:</strong> run — counterpush before you lose site, flank as it falls, shoot the trip then come back or flank, and open a new angle so your death is traded.</li>
+        <li><strong>2v1 plant:</strong> one player per site — the lone planter must clear ghost crossfires, wasting time; once planted, reposition NOW (link for 1v1s, or main).</li>
+        <li><strong>Spike 3s/6s rule (open spike, 1v1):</strong> don't swing the first second (99.99% he checks — 4 angles); wait <strong>3s</strong> because he wants to finish the halve animation; at <strong>20s</strong> that's 6–7 peeks instead of 20. Jiggle at 6s: if halfed, wait 3, else wait 6. In smokes, wait ~5s before swinging.</li>
+        <li><strong>Panic attack:</strong> pixel angle; run to a smoke spraying it; prefire common angles; spam through smoke while backing out; wall-bang instead of peeking 5 people. Be silent unless necessary.</li>
+        <li><strong>Catch up and punish:</strong> use util the instant it makes contact (Fade dog on Haven garage → TP or run up as it enters) — waiting lets her fall back to site. Swing <strong>with</strong> the drone, not after. Ask for recon/flashes; punish the fallback timing.</li>
+        <li><strong>4-step punish process:</strong>
+          <ol>
+            <li>What mistake are they making?</li>
+            <li>Will they do it again?</li>
+            <li>How do we punish it?</li>
+            <li>How do we get away if the punish fails?</li>
+          </ol>
+        </li>
+      </ul>
+
+      <h3 id="after-round">After the Round</h3>
+      <ul>
+        <li><strong>Don't burn a flank you'll want again:</strong> if you were flanking and the team won, stay put — revealing that Phoenix likes the flank costs you the next one.</li>
+        <li><strong>Drop the gun:</strong> on an eco or half-buy win, drop a gun for the teammate coming from behind — he won't make the buy in time.</li>
+        <li><strong>Orbs before spike:</strong> in a <strong>4v1</strong> vs a saving enemy, collect orbs first — the closest player takes an unclaimed orb — and give spike if you already have ult.</li>
+      </ul>
+    </section>
+
+    <!-- ---------- UTILITY ---------- -->
+    <section id="utility">
+      <h2><span class="num">06</span>Utility and Ults</h2>
+      <ul>
+        <li><strong>Overuse util early</strong> — people start aggressive and full of ego; util-dumping conditions them to back off. Once they stop resisting (A main), use less (Phoenix flash instead of blind+nade); if they flash, stun back.</li>
+        <li><strong>More resistance = more util;</strong> if they stop taking space, save it; work the map with rechargeables. On defense start further back so you don't walk into their util.</li>
+        <li><strong>Take a lone player's space with util</strong> — cheaper than fighting a double/triple swing.</li>
+        <li><strong>Suppressing vs punishing:</strong> suppressing keeps them in a corner or off site for a second or two (Skye flash on the Split mid left corner); punishing goes for the kill (same flash, enemy on the right). If the util expires before you arrive, it was suppressing; if you convert, it was punishing.</li>
+        <li><strong>Combos:</strong> mollies + stuns, recon + flashes, smokes + anything (Sova/Waylay/KAY/O/Omen: noise → slow + molly; drone → flash).</li>
+        <li><strong>Smoke the spike, not main</strong> — they don't know where to spam you. Any wall/smoke works (Neon, Phoenix, Jett).</li>
+        <li><strong>Ults:</strong> better to pop and fight than hold it.
+          <ul>
+            <li><strong>Anytime:</strong> Veto, Reyna, Cypher (round start), Chamber, Jett, Neon (on the push).</li>
+            <li><strong>Need info:</strong> Omen, Deadlock.</li>
+            <li><strong>To gain site / turn 3v5 into 4v5:</strong> Sage, Clove.</li>
+            <li><strong>Execute/retake:</strong> KJ, Tejo, Astra, KAY/O, Skye, Sova, Viper, Yoru, Vyse (bad on 3v5 unless it guarantees the round).</li>
+            <li><strong>Win the 1v1 on attack/execute:</strong> Waylay, Raze, Gekko, Miks, Phoenix, Iso, Breach.</li>
+          </ul>
+        </li>
+        <li><strong>Check ult routine:</strong> compare both teams' ults pre-round — Astra ult means don't play main; Breach ult means don't play site or push spawn.</li>
+      </ul>
+    </section>
+
+    <!-- ---------- AGENTS ---------- -->
+    <section id="agents">
+      <h2><span class="num">07</span>Agents</h2>
+      <ul>
+        <li><strong>3 agents max</strong> — depth beats breadth.</li>
+        <li><strong>Roles on attack:</strong> Duelist goes through the choke; Initiator util gets him past it; Controller smokes so there are fewer angles; Sentinel gets info and stops lurkers.</li>
+        <li><strong>Roles on defense:</strong> Initiators use util for free space/info; Duelists play aggro (their life matters less); Controllers smoke chokes and stall; Sentinels stop pushes and lurk for info.</li>
+        <li><strong>Passive vs aggressive follows the kit:</strong> Waylay uses everything to get on site, so she plays aggro after; Tejo/Astra have post-plant util, so they play passive.</li>
+        <li><strong>Out-of-system:</strong> know what util does beyond the default execute (Waylay stun re-clearing B space post-plant); learn <strong>1 execute per map</strong> — it works ~90% of the time.</li>
+        <li><strong>Read enemy agents:</strong> Skye + Jett at a choke → expect flash then dash, and punish the Jett out of dash recovery; Sova droning Haven sewer → kill the player behind the drone; known KJ setups → bait mollies; Jett dashed on retake → assume CT push; one-way Lotus C long/Summit → smoke it and pop-flash out with the team.</li>
+        <li><strong>Read players individually:</strong> if you know a player's habit, punish it — the 24/7 lurker can be caught, the Duelist who always baits can be left to die.</li>
+        <li><strong>Comp counters:</strong> many Duelists → spam the choke to break momentum; recon-heavy → no one-and-done cubbies, play long range/Op; many smokes → they must commit to one site; Senti-heavy → util past the flank util; fast comp → anchor more; slow comp → rotate more (their util takes ~7s, enough for a full retake).</li>
+        <li><strong>Role choice:</strong> Controller if you like creative smokes and being the foundation; Sentinel if you solo Q, punish bad players, and like watching flanks; Initiator if you like comms, constant progress, and cross-map impact without crazy aim; Duelist if you want to carry and punish mistakes (highest skill floor).</li>
+      </ul>
+    </section>
+
+    <!-- ---------- IMPROVEMENT ---------- -->
+    <section id="improvement">
+      <h2><span class="num">08</span>Improvement Method</h2>
+      <ul>
+        <li><strong>One skill, fully focused, for at least 5 games</strong> — because split attention teaches nothing.</li>
+        <li><strong>Cycle:</strong> learn 1 skill → 1 skill → 2 at once → repeat; then zoom out to the big picture for a set.</li>
+        <li><strong>Learn what works:</strong> find angles that favor holding over peeking and vice versa; if you win more there, it works for you; steal from Radiant VODs and pro util usage (only from players who play your agent).</li>
+      </ul>
+    </section>
+
+    <!-- ---------- MENTALITY ---------- -->
+    <section id="mentality">
+      <h2><span class="num">09</span>Mentality and Solo Q</h2>
+      <ul>
+        <li><strong>Mute text and enemy chat</strong>, habitually mute team on load; best response is <strong>"Sorry, I made a mistake"</strong> — arguing costs rounds.</li>
+        <li><strong>Analyze what went wrong; take breaks between games;</strong> real-life confidence shows in game.</li>
+        <li><strong>Lower expectations:</strong> they won't play correctly; have fun; don't expect anything; <strong>don't feel pressured to push</strong> when your team does something stupid (stun too early).</li>
+        <li><strong>Stay solid:</strong> it's always your fault; breathe under pressure; play at your own pace.</li>
+        <li><strong>Long-term confidence:</strong> stay social — 2 weeks without talking to people makes you anxious.</li>
+        <li><strong>Double inhale:</strong> big inhale as much as you can → pause → inhale again until full → inhale naturally → exhale slowly.</li>
+        <li><strong>Solo Q:</strong> no hesitation or uncertainty; believe you're better than 90% of your rank; go for your play; show no respect. Fight IQ: know what your gun can take (don't swing long with a Classic) and be in the best position to take it. Mechanics: raw aim, crosshair placement tracking the wall angle (yay), movement.</li>
+      </ul>
+    </section>
+
+    <!-- ---------- RANKS ---------- -->
+    <section id="ranks">
+      <h2><span class="num">10</span>Rank Progression Appendix</h2>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr><th>Rank</th><th>Skills unlocked</th></tr>
+          </thead>
+          <tbody>
+            <tr><td>Iron</td><td>AD peek, orb farming, cover discipline, the 99% rotation, jiggling, util from cover</td></tr>
+            <tr><td>Bronze</td><td>Die A go B, 40% flanking, force buys, A/D tap-strafe, attack/defense fundamentals, aggression triggers</td></tr>
+            <tr><td>Silver</td><td>Repositioning, trading base, plant timing, incremental space, don't play on site, never hide in a corner, learn what works</td></tr>
+            <tr><td>Gold</td><td>Number-based decisions, 1HP rules, time math, Operator guide, ult timing, util resistance, util combos</td></tr>
+            <tr><td>Platinum</td><td>No-util/low-HP runs, angle clearing, smoking the spike, jump-strafe util, suppressing vs punishing, countering 5-man pushes, 3s/6s rule</td></tr>
+            <tr><td>Diamond</td><td>Advanced trading, 2v1 plants, lock-in, check-ult routine, 1HP/down-numbers variant</td></tr>
+            <tr><td>Ascendant</td><td>Post-plant util, panic attack, reading agents, play solo until you can't, catch-up punish, comp counters, contain and squash</td></tr>
+            <tr><td>Immortal</td><td>Defensive position variety, comms counts and fake detection, minimap decisions, post-round actions, 4-step punish process, reading individual players <em>(still missing: Extra Gaps Of Information)</em></td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p><span class="pill">Note</span> <em>Choose Where To Push — Diamond (coming soon).</em></p>
+    </section>
+
+    <!-- ---------- OPEN QUESTIONS ---------- -->
+    <section id="open-questions">
+      <h2><span class="num">11</span>Open Questions</h2>
+      <ul>
+        <li><strong>AWP agent list vs the principle.</strong> The stated law is "free escape after the shot," which strictly covers Jett, Chamber, Yoru, Waylay. Week 4 also lists Raze, Neon, and Reyna — Raze/Neon have mobility but no clean post-shot escape, Reyna's dismiss requires a kill. Resolve: which list governs?</li>
+        <li><strong>1HP definition</strong> — "&lt;40 HP (and maybe &lt;81 HP)" — the 81 threshold is unclear; 40 is used for every rule.</li>
+        <li><strong>"Always light armor with no damage util"</strong> vs full buy normally meaning heavy — does this apply to all rounds or only force/eco?</li>
+        <li><strong>Phantom absolutism</strong> ("just play Phantom") coexists with "Vandal at 30m+" — kept both; confirm whether Phantom is truly all-round for you.</li>
+        <li><strong>"Force Round Buys: buy guns after winning pistol"</strong> appears to contradict the attacker bonus table (3rd = bonus) and defender eco (2nd = eco). Clarify what "force" means on 2nd.</li>
+        <li><strong>Dead zone</strong> — undefined in the notes; meaning above is inferred.</li>
+        <li><strong>"Don't goon"</strong> — no reason given; inferred above.</li>
+        <li><strong>Corner rule tension</strong> — "never hide in a corner" vs "corners are good" for post-kill repositioning. Likely holding vs after-kill, but the notes don't say.</li>
+        <li><strong>Defender buy pattern</strong> (5th/7th eco) — fixed pattern or read-based?</li>
+        <li><strong>Bandit</strong> — not a standard Valorant gun; alternate name or new weapon?</li>
+        <li><strong>Miks, Veto</strong> — agent names to confirm.</li>
+        <li><strong>"LRLL → RLRR"</strong> — notation unclear (strafe pattern? swing directions?).</li>
+        <li><strong>Sheriff "even round"</strong> — meaning unclear (full-buy parity? economy parity?).</li>
+        <li><strong>Dropped placeholders</strong> — your updated notes removed "Choose Where To Push" (Diamond) and "Extra Gaps Of Information" (Immortal); both are still marked as placeholders here — confirm delete or restore.</li>
+      </ul>
+    </section>
+
+    <footer>
+      <p>Compiled reference — Valorant core game logic, mechanics, economy, round flow, utility and mentality. Print-friendly.</p>
+    </footer>
+
+  </main>
+</div>
+
+<script>
+  // Highlight the current section in the sidebar
+  (function () {
+    const links = Array.from(document.querySelectorAll('nav a'));
+    const targets = links
+      .map(a => document.querySelector(a.getAttribute('href')))
+      .filter(Boolean);
+
+    if (!('IntersectionObserver' in window) || targets.length === 0) return;
+
+    const setActive = (id) => {
+      links.forEach(a => a.classList.toggle('active', a.getAttribute('href') === '#' + id));
+    };
+
+    const observer = new IntersectionObserver((entries) => {
+      const visible = entries
+        .filter(e => e.isIntersecting)
+        .sort((a, b) => b.intersectionRatio - a.intersectionRatio);
+      if (visible.length) setActive(visible[0].target.id);
+    }, {
+      rootMargin: '-10% 0px -70% 0px',
+      threshold: [0, 0.25, 0.5, 1]
+    });
+
+    targets.forEach(t => observer.observe(t));
+  })();
+</script>
+
+</body>
+</html>
