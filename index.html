@@ -4,77 +4,283 @@
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <title>Core Game Logic — Valorant Notes</title>
+<script>document.documentElement.classList.add('js');</script>
 <style>
+  /* ============================================================
+     THEME TOKENS
+     ============================================================ */
   :root {
-    --bg: #0e1116;
-    --bg-2: #151a22;
-    --bg-3: #1b2230;
-    --text: #e6e9ef;
-    --muted: #98a2b3;
+    --bg: #0b0f14;
+    --bg-2: #11161e;
+    --bg-3: #18202b;
+    --bg-4: #1e2836;
+    --text: #e7ebf1;
+    --text-strong: #ffffff;
+    --muted: #93a0b1;
     --accent: #ff4655;
-    --accent-2: #22d3ee;
-    --border: #26303f;
-    --radius: 10px;
+    --accent-2: #38bdf8;
+    --accent-3: #a78bfa;
+    --border: #232d3b;
+    --mark-bg: #ffd166;
+    --mark-text: #1a1206;
+    --shadow: 0 14px 40px rgba(0, 0, 0, 0.45);
+    --shadow-sm: 0 4px 14px rgba(0, 0, 0, 0.3);
+    --radius: 12px;
+    --topbar-h: 60px;
   }
 
+  html[data-theme="light"] {
+    --bg: #f4f6f9;
+    --bg-2: #ffffff;
+    --bg-3: #eef1f6;
+    --bg-4: #e4e9f1;
+    --text: #16202c;
+    --text-strong: #000000;
+    --muted: #5b6878;
+    --accent: #d61f35;
+    --accent-2: #0b7f95;
+    --accent-3: #6d4bd8;
+    --border: #d7dee8;
+    --mark-bg: #ffe066;
+    --mark-text: #241a02;
+    --shadow: 0 14px 40px rgba(20, 35, 60, 0.14);
+    --shadow-sm: 0 4px 14px rgba(20, 35, 60, 0.10);
+  }
+
+  /* ============================================================
+     BASE
+     ============================================================ */
   * { box-sizing: border-box; }
 
-  html { scroll-behavior: smooth; scroll-padding-top: 1.5rem; }
+  html {
+    scroll-behavior: smooth;
+    scroll-padding-top: calc(var(--topbar-h) + 20px);
+  }
 
   body {
     margin: 0;
-    background: var(--bg);
+    background:
+      radial-gradient(1100px 560px at 88% -12%, rgba(255, 70, 85, 0.10), transparent 62%),
+      radial-gradient(900px 520px at -8% 8%, rgba(56, 189, 248, 0.08), transparent 60%),
+      var(--bg);
+    background-attachment: fixed;
     color: var(--text);
     font-family: system-ui, -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-    line-height: 1.65;
     font-size: 16px;
+    line-height: 1.65;
     -webkit-font-smoothing: antialiased;
+    transition: background-color .35s ease, color .35s ease;
   }
 
-  /* ---------- Layout ---------- */
+  ::selection { background: var(--accent); color: #fff; }
+
+  a { color: var(--accent-2); }
+
+  /* ============================================================
+     TOP BAR
+     ============================================================ */
+  .topbar {
+    position: sticky;
+    top: 0;
+    z-index: 50;
+    height: var(--topbar-h);
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0 1rem;
+    background: color-mix(in srgb, var(--bg) 78%, transparent);
+    -webkit-backdrop-filter: blur(14px) saturate(140%);
+    backdrop-filter: blur(14px) saturate(140%);
+    border-bottom: 1px solid var(--border);
+  }
+
+  .progress-track {
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: -1px;
+    height: 3px;
+    background: transparent;
+    pointer-events: none;
+  }
+
+  .progress-fill {
+    height: 100%;
+    width: 0%;
+    background: linear-gradient(90deg, var(--accent), var(--accent-3), var(--accent-2));
+    border-radius: 0 3px 3px 0;
+    transition: width .12s linear;
+    box-shadow: 0 0 12px color-mix(in srgb, var(--accent) 60%, transparent);
+  }
+
+  .nav-toggle {
+    display: none;
+    width: 38px;
+    height: 38px;
+    border-radius: 10px;
+    border: 1px solid var(--border);
+    background: var(--bg-2);
+    color: var(--text);
+    font-size: 1.05rem;
+    cursor: pointer;
+    flex: 0 0 auto;
+    transition: background .2s, border-color .2s;
+  }
+  .nav-toggle:hover { border-color: var(--accent); }
+
+  .topbar-brand {
+    font-weight: 800;
+    letter-spacing: 0.16em;
+    font-size: 0.72rem;
+    text-transform: uppercase;
+    color: var(--text);
+    white-space: nowrap;
+    flex: 0 0 auto;
+    display: flex;
+    align-items: center;
+    gap: 0.45rem;
+  }
+  .topbar-brand .dot {
+    width: 8px; height: 8px; border-radius: 50%;
+    background: var(--accent);
+    box-shadow: 0 0 12px var(--accent);
+    animation: pulse 2.4s ease-in-out infinite;
+  }
+  .topbar-brand span { color: var(--muted); font-weight: 600; letter-spacing: 0.06em; }
+
+  .search-wrap {
+    flex: 1 1 auto;
+    max-width: 520px;
+    margin: 0 auto;
+    position: relative;
+    display: flex;
+    align-items: center;
+  }
+
+  .search-wrap svg {
+    position: absolute;
+    left: 12px;
+    width: 16px; height: 16px;
+    color: var(--muted);
+    pointer-events: none;
+  }
+
+  #search {
+    width: 100%;
+    height: 38px;
+    padding: 0 92px 0 36px;
+    border-radius: 999px;
+    border: 1px solid var(--border);
+    background: var(--bg-2);
+    color: var(--text);
+    font-size: 0.88rem;
+    outline: none;
+    transition: border-color .2s, box-shadow .2s, background .2s;
+  }
+  #search::placeholder { color: var(--muted); }
+  #search:focus {
+    border-color: var(--accent);
+    box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 22%, transparent);
+  }
+  #search::-webkit-search-cancel-button { cursor: pointer; }
+
+  .search-count {
+    position: absolute;
+    right: 10px;
+    font-size: 0.68rem;
+    font-weight: 700;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    color: var(--muted);
+    background: var(--bg-3);
+    border-radius: 999px;
+    padding: 0.15rem 0.55rem;
+    pointer-events: none;
+    white-space: nowrap;
+  }
+
+  .topbar-actions {
+    display: flex;
+    gap: 0.4rem;
+    flex: 0 0 auto;
+  }
+
+  .icon-btn {
+    width: 38px;
+    height: 38px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 10px;
+    border: 1px solid var(--border);
+    background: var(--bg-2);
+    color: var(--text);
+    cursor: pointer;
+    font-size: 1rem;
+    line-height: 1;
+    transition: transform .18s ease, border-color .2s, background .2s, color .2s;
+  }
+  .icon-btn:hover {
+    border-color: var(--accent);
+    color: var(--accent);
+    transform: translateY(-1px);
+  }
+  .icon-btn:active { transform: translateY(0) scale(0.96); }
+  .icon-btn svg { width: 17px; height: 17px; }
+
+  /* ============================================================
+     LAYOUT
+     ============================================================ */
   .layout {
     display: grid;
-    grid-template-columns: 270px minmax(0, 1fr);
-    gap: 2.5rem;
-    max-width: 1400px;
+    grid-template-columns: 272px minmax(0, 1fr);
+    gap: 2.75rem;
+    max-width: 1440px;
     margin: 0 auto;
-    padding: 2rem 1.5rem 5rem;
+    padding: 2.25rem 1.5rem 6rem;
   }
 
-  /* ---------- Sidebar / Nav ---------- */
+  /* ============================================================
+     SIDEBAR
+     ============================================================ */
   .sidebar {
     position: sticky;
-    top: 1.5rem;
+    top: calc(var(--topbar-h) + 22px);
     align-self: start;
-    max-height: calc(100vh - 3rem);
+    max-height: calc(100vh - var(--topbar-h) - 44px);
     overflow-y: auto;
-    padding-right: 0.5rem;
+    padding-right: 0.6rem;
+    overscroll-behavior: contain;
   }
-
   .sidebar::-webkit-scrollbar { width: 6px; }
-  .sidebar::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+  .sidebar::-webkit-scrollbar-track { background: transparent; }
+  .sidebar::-webkit-scrollbar-thumb {
+    background: var(--border);
+    border-radius: 3px;
+  }
+  .sidebar::-webkit-scrollbar-thumb:hover { background: var(--accent); }
 
   .brand {
-    font-size: 0.75rem;
-    letter-spacing: 0.18em;
+    font-size: 0.72rem;
+    letter-spacing: 0.2em;
     text-transform: uppercase;
     color: var(--accent);
-    font-weight: 700;
-    margin-bottom: 0.25rem;
+    font-weight: 800;
+    margin-bottom: 0.2rem;
   }
-
   .brand-sub {
     font-size: 0.75rem;
     color: var(--muted);
-    margin-bottom: 1.25rem;
+    margin-bottom: 1.4rem;
   }
 
   .nav-title {
-    font-size: 0.7rem;
-    letter-spacing: 0.14em;
+    font-size: 0.66rem;
+    letter-spacing: 0.16em;
     text-transform: uppercase;
     color: var(--muted);
-    margin: 1.25rem 0 0.5rem;
+    margin: 0 0 0.6rem;
+    font-weight: 700;
   }
 
   nav ul {
@@ -84,96 +290,213 @@
     border-left: 2px solid var(--border);
   }
 
-  nav li { margin: 0; }
-
   nav a {
     display: block;
-    padding: 0.35rem 0.75rem;
+    position: relative;
+    padding: 0.34rem 0.8rem;
     color: var(--muted);
     text-decoration: none;
-    font-size: 0.875rem;
+    font-size: 0.855rem;
     border-left: 2px solid transparent;
     margin-left: -2px;
-    transition: color .15s, border-color .15s, background .15s;
+    border-radius: 0 6px 6px 0;
+    transition: color .18s, border-color .18s, background .18s, padding-left .18s;
   }
-
-  nav a:hover { color: var(--text); background: var(--bg-2); }
-
+  nav a:hover { color: var(--text); background: var(--bg-2); padding-left: 1rem; }
   nav a.active {
     color: var(--accent);
     border-left-color: var(--accent);
-    font-weight: 600;
-    background: var(--bg-2);
+    font-weight: 650;
+    background: linear-gradient(90deg, color-mix(in srgb, var(--accent) 12%, transparent), transparent);
+  }
+  nav a.sub { padding-left: 1.55rem; font-size: 0.8rem; }
+  nav a.sub:hover { padding-left: 1.75rem; }
+  nav a.search-dim { opacity: 0.28; }
+
+  .sidebar-foot {
+    margin-top: 1.5rem;
+    padding-top: 1rem;
+    border-top: 1px dashed var(--border);
+    font-size: 0.72rem;
+    color: var(--muted);
+    line-height: 1.5;
+  }
+  .sidebar-foot kbd {
+    font-family: inherit;
+    font-size: 0.68rem;
+    border: 1px solid var(--border);
+    border-bottom-width: 2px;
+    border-radius: 5px;
+    padding: 0 0.35rem;
+    background: var(--bg-3);
+    color: var(--text);
   }
 
-  nav a.sub { padding-left: 1.5rem; font-size: 0.82rem; }
-
-  /* ---------- Content ---------- */
+  /* ============================================================
+     MAIN
+     ============================================================ */
   main { min-width: 0; }
 
   header.page-head {
-    border-bottom: 2px solid var(--border);
-    padding-bottom: 1.5rem;
+    padding-bottom: 1.75rem;
     margin-bottom: 2.5rem;
+    border-bottom: 1px solid var(--border);
   }
 
   header.page-head h1 {
-    font-size: clamp(1.9rem, 4vw, 2.8rem);
-    margin: 0 0 0.4rem;
-    letter-spacing: -0.02em;
-    line-height: 1.15;
+    font-size: clamp(2rem, 4.4vw, 3rem);
+    margin: 0 0 0.5rem;
+    line-height: 1.1;
+    letter-spacing: -0.025em;
+    font-weight: 800;
   }
-
-  header.page-head h1 span { color: var(--accent); }
+  header.page-head h1 em {
+    font-style: normal;
+    color: var(--accent);
+    text-shadow: 0 0 34px color-mix(in srgb, var(--accent) 45%, transparent);
+  }
 
   header.page-head p {
-    margin: 0;
+    margin: 0 0 1.2rem;
     color: var(--muted);
-    max-width: 70ch;
+    max-width: 72ch;
+    font-size: 1rem;
   }
 
-  section { margin-bottom: 3.5rem; scroll-margin-top: 1rem; }
+  .stats {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+  }
+  .stat {
+    display: inline-flex;
+    align-items: baseline;
+    gap: 0.4rem;
+    background: var(--bg-2);
+    border: 1px solid var(--border);
+    border-radius: 999px;
+    padding: 0.28rem 0.8rem;
+    font-size: 0.74rem;
+    color: var(--muted);
+    letter-spacing: 0.03em;
+  }
+  .stat b {
+    color: var(--text);
+    font-size: 0.86rem;
+    font-variant-numeric: tabular-nums;
+  }
+
+  /* ---------- Sections ---------- */
+  section {
+    margin-bottom: 3.25rem;
+    scroll-margin-top: calc(var(--topbar-h) + 20px);
+  }
+
+  .js section.section {
+    opacity: 0;
+    transform: translateY(26px);
+    transition: opacity .65s ease, transform .65s cubic-bezier(.2, .8, .3, 1);
+  }
+  .js section.section.is-visible {
+    opacity: 1;
+    transform: none;
+  }
+
+  section.search-hidden { display: none; }
 
   h2 {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
     font-size: 1.5rem;
-    margin: 0 0 1rem;
-    padding-bottom: 0.5rem;
+    font-weight: 750;
+    letter-spacing: -0.015em;
+    margin: 0 0 1.15rem;
+    padding-bottom: 0.6rem;
     border-bottom: 1px solid var(--border);
-    letter-spacing: -0.01em;
   }
 
   h2 .num {
-    color: var(--accent);
-    font-size: 0.85rem;
+    font-size: 0.82rem;
     font-variant-numeric: tabular-nums;
-    margin-right: 0.6rem;
-    vertical-align: 0.15em;
-    opacity: 0.85;
+    font-weight: 800;
+    color: var(--accent);
+    letter-spacing: 0.06em;
+    opacity: 0.9;
   }
 
+  .h2-actions {
+    margin-left: auto;
+    display: flex;
+    gap: 0.25rem;
+    opacity: 0;
+    transform: translateX(4px);
+    transition: opacity .2s, transform .2s;
+  }
+  h2:hover .h2-actions,
+  h2:focus-within .h2-actions { opacity: 1; transform: none; }
+
+  .h2-actions .icon-btn {
+    width: 28px;
+    height: 28px;
+    border-radius: 8px;
+    background: transparent;
+    border-color: transparent;
+    color: var(--muted);
+  }
+  .h2-actions .icon-btn:hover {
+    background: var(--bg-3);
+    border-color: var(--border);
+    color: var(--accent);
+  }
+  .h2-actions .icon-btn svg { width: 14px; height: 14px; }
+
+  .collapse-btn svg { transition: transform .35s cubic-bezier(.2, .8, .3, 1); }
+  section.is-collapsed .collapse-btn svg { transform: rotate(-90deg); }
+
+  /* Collapsible body — animated with grid-template-rows */
+  .section-body {
+    display: grid;
+    grid-template-rows: 1fr;
+    transition: grid-template-rows .4s cubic-bezier(.2, .8, .3, 1);
+  }
+  section.is-collapsed .section-body { grid-template-rows: 0fr; }
+  .section-inner { overflow: hidden; }
+  section.is-collapsed h2 { margin-bottom: 0; }
+
+  /* ---------- Typography inside sections ---------- */
   h3 {
-    font-size: 1.12rem;
-    margin: 2rem 0 0.75rem;
-    color: var(--accent-2);
+    font-size: 1.08rem;
+    font-weight: 700;
     letter-spacing: 0.01em;
+    color: var(--accent-2);
+    margin: 2rem 0 0.7rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
   }
-
-  h3:first-of-type { margin-top: 1rem; }
+  h3::before {
+    content: "";
+    width: 4px;
+    height: 15px;
+    border-radius: 2px;
+    background: linear-gradient(var(--accent-2), var(--accent-3));
+    flex: 0 0 auto;
+  }
+  h3:first-child { margin-top: 0.6rem; }
 
   p { margin: 0 0 1rem; }
+  strong { color: var(--text-strong); font-weight: 650; }
+  em { color: var(--muted); }
 
-  strong { color: #fff; font-weight: 650; }
-
-  ul, ol { margin: 0 0 1rem; padding-left: 1.35rem; }
-
+  ul, ol { margin: 0 0 1.1rem; padding-left: 1.3rem; }
   li { margin-bottom: 0.55rem; }
-
   li::marker { color: var(--accent); }
+  ol.rules > li::marker { font-weight: 800; }
 
-  ol.rules > li::marker { font-weight: 700; }
+  ul ul, ol ol, ul ol, ol ul { margin-top: 0.5rem; margin-bottom: 0.35rem; }
 
-  /* Inline highlight */
-  .hl { color: var(--accent-2); font-weight: 600; }
+  li > strong:first-child { color: var(--text-strong); }
 
   /* ---------- Tables ---------- */
   .table-wrap {
@@ -182,6 +505,7 @@
     border-radius: var(--radius);
     margin: 1rem 0 1.5rem;
     background: var(--bg-2);
+    box-shadow: var(--shadow-sm);
   }
 
   table {
@@ -194,114 +518,338 @@
   thead th {
     background: var(--bg-3);
     text-align: left;
-    padding: 0.7rem 1rem;
-    font-size: 0.72rem;
-    letter-spacing: 0.1em;
+    padding: 0.72rem 1rem;
+    font-size: 0.7rem;
+    letter-spacing: 0.11em;
     text-transform: uppercase;
     color: var(--muted);
     border-bottom: 1px solid var(--border);
     white-space: nowrap;
+    position: sticky;
+    top: 0;
+    z-index: 1;
   }
 
   tbody td {
-    padding: 0.65rem 1rem;
+    padding: 0.66rem 1rem;
     border-bottom: 1px solid var(--border);
     vertical-align: top;
   }
-
   tbody tr:last-child td { border-bottom: none; }
+  tbody tr:nth-child(even) { background: color-mix(in srgb, var(--text) 2%, transparent); }
+  tbody tr { transition: background .16s ease; }
+  tbody tr:hover { background: color-mix(in srgb, var(--accent) 9%, transparent); }
 
-  tbody tr:nth-child(even) { background: rgba(255,255,255,0.02); }
-
-  tbody tr:hover { background: rgba(255,70,85,0.06); }
-
-  td:first-child { white-space: nowrap; font-weight: 600; color: #fff; }
+  td:first-child {
+    white-space: nowrap;
+    font-weight: 650;
+    color: var(--text-strong);
+  }
 
   .table-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    grid-template-columns: repeat(auto-fit, minmax(290px, 1fr));
     gap: 1.25rem;
   }
 
   /* ---------- Callouts ---------- */
   .callout {
     border-left: 3px solid var(--accent);
-    background: var(--bg-2);
-    padding: 0.85rem 1.1rem;
+    background: color-mix(in srgb, var(--accent) 7%, var(--bg-2));
+    padding: 0.9rem 1.15rem;
     border-radius: 0 var(--radius) var(--radius) 0;
     margin: 1rem 0 1.5rem;
-    color: var(--text);
-    font-size: 0.95rem;
+    font-size: 0.94rem;
   }
-
-  .callout.info { border-left-color: var(--accent-2); }
+  .callout.info {
+    border-left-color: var(--accent-2);
+    background: color-mix(in srgb, var(--accent-2) 7%, var(--bg-2));
+  }
   .callout strong { color: var(--accent); }
   .callout.info strong { color: var(--accent-2); }
 
-  /* ---------- Misc ---------- */
-  .pill {
-    display: inline-block;
-    font-size: 0.68rem;
-    letter-spacing: 0.1em;
-    text-transform: uppercase;
-    background: var(--bg-3);
-    color: var(--muted);
-    border: 1px solid var(--border);
-    border-radius: 999px;
-    padding: 0.1rem 0.55rem;
-    vertical-align: 0.15em;
-    font-weight: 700;
+  /* ---------- Search highlight ---------- */
+  mark.search-hit {
+    background: var(--mark-bg);
+    color: var(--mark-text);
+    border-radius: 3px;
+    padding: 0 2px;
+    animation: markPop .3s cubic-bezier(.2, .9, .3, 1.4);
   }
 
+  /* ---------- Rank tracker ---------- */
+  .rank-meter {
+    display: flex;
+    align-items: center;
+    gap: 0.9rem;
+    margin: 1rem 0 1.1rem;
+    padding: 0.8rem 1rem;
+    background: var(--bg-2);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+  }
+  .rank-meter-track {
+    flex: 1;
+    height: 8px;
+    border-radius: 999px;
+    background: var(--bg-4);
+    overflow: hidden;
+  }
+  .rank-meter-fill {
+    height: 100%;
+    width: 0%;
+    border-radius: 999px;
+    background: linear-gradient(90deg, var(--accent), var(--accent-3), var(--accent-2));
+    transition: width .5s cubic-bezier(.2, .8, .3, 1);
+  }
+  #rankLabel {
+    font-size: 0.76rem;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--muted);
+    white-space: nowrap;
+  }
+
+  .rank-check { width: 46px; text-align: center; }
+  .rank-check input {
+    width: 17px;
+    height: 17px;
+    accent-color: var(--accent);
+    cursor: pointer;
+    vertical-align: middle;
+  }
+  tr.rank-done td { color: var(--muted); }
+  tr.rank-done td:nth-child(2)::after {
+    content: " ✓";
+    color: var(--accent-2);
+    font-weight: 800;
+  }
+
+  /* ---------- Toast ---------- */
+  .toast {
+    position: fixed;
+    left: 50%;
+    bottom: 26px;
+    transform: translate(-50%, 140%);
+    max-width: min(600px, calc(100vw - 2rem));
+    background: var(--bg-3);
+    color: var(--text);
+    border: 1px solid var(--border);
+    border-left: 3px solid var(--accent);
+    border-radius: 10px;
+    padding: 0.8rem 1.15rem;
+    box-shadow: var(--shadow);
+    font-size: 0.9rem;
+    line-height: 1.5;
+    z-index: 120;
+    opacity: 0;
+    transition: transform .42s cubic-bezier(.2, .9, .3, 1.15), opacity .3s;
+    pointer-events: none;
+  }
+  .toast.show { transform: translate(-50%, 0); opacity: 1; pointer-events: auto; }
+  .toast .toast-tag {
+    display: block;
+    font-size: 0.64rem;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: var(--accent);
+    font-weight: 800;
+    margin-bottom: 0.2rem;
+  }
+
+  /* ---------- Back to top ---------- */
+  .fab {
+    position: fixed;
+    right: 22px;
+    bottom: 22px;
+    width: 46px;
+    height: 46px;
+    border-radius: 50%;
+    border: 1px solid var(--border);
+    background: var(--bg-2);
+    color: var(--text);
+    display: grid;
+    place-items: center;
+    cursor: pointer;
+    z-index: 90;
+    box-shadow: var(--shadow);
+    opacity: 0;
+    transform: translateY(14px) scale(0.9);
+    pointer-events: none;
+    transition: opacity .3s, transform .3s cubic-bezier(.2, .9, .3, 1.2), border-color .2s, color .2s;
+  }
+  .fab.show { opacity: 1; transform: none; pointer-events: auto; }
+  .fab:hover { border-color: var(--accent); color: var(--accent); }
+  .fab svg { width: 20px; height: 20px; }
+
+  /* ---------- Nav backdrop (mobile) ---------- */
+  .nav-backdrop {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.55);
+    -webkit-backdrop-filter: blur(2px);
+    backdrop-filter: blur(2px);
+    z-index: 55;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity .3s;
+  }
+
+  /* ---------- Footer ---------- */
   footer {
     border-top: 1px solid var(--border);
-    padding-top: 1.5rem;
+    padding-top: 1.6rem;
     color: var(--muted);
-    font-size: 0.85rem;
+    font-size: 0.84rem;
   }
 
-  /* ---------- Responsive ---------- */
-  @media (max-width: 900px) {
+  /* ============================================================
+     ANIMATIONS
+     ============================================================ */
+  @keyframes pulse {
+    0%, 100% { opacity: 1; transform: scale(1); }
+    50% { opacity: 0.45; transform: scale(0.82); }
+  }
+
+  @keyframes markPop {
+    from { transform: scale(0.72); opacity: 0.4; }
+    to { transform: scale(1); opacity: 1; }
+  }
+
+  /* ============================================================
+     RESPONSIVE
+     ============================================================ */
+  @media (max-width: 1000px) {
+    .layout { grid-template-columns: 236px minmax(0, 1fr); gap: 2rem; }
+  }
+
+  @media (max-width: 860px) {
+    .nav-toggle { display: inline-flex; align-items: center; justify-content: center; }
+
     .layout {
       grid-template-columns: 1fr;
-      gap: 1.5rem;
-      padding: 1.25rem 1rem 4rem;
+      gap: 0;
+      padding: 1.5rem 1rem 5rem;
     }
+
     .sidebar {
-      position: static;
+      position: fixed;
+      top: 0;
+      left: 0;
+      bottom: 0;
+      width: min(320px, 86vw);
       max-height: none;
-      overflow: visible;
-      border-bottom: 1px solid var(--border);
-      padding-bottom: 1rem;
+      z-index: 60;
+      background: var(--bg-2);
+      border-right: 1px solid var(--border);
+      padding: 1.4rem 1.1rem 2rem;
+      transform: translateX(-102%);
+      transition: transform .34s cubic-bezier(.2, .85, .3, 1);
+      box-shadow: none;
     }
-    nav ul { display: flex; flex-wrap: wrap; border-left: none; gap: 0.25rem; }
-    nav a {
-      border-left: none;
-      border: 1px solid var(--border);
-      border-radius: 999px;
-      padding: 0.3rem 0.75rem;
-      margin-left: 0;
+    body.nav-open .sidebar {
+      transform: none;
+      box-shadow: 0 0 70px rgba(0, 0, 0, 0.6);
     }
-    nav a.active { border-color: var(--accent); }
-    nav a.sub { padding-left: 0.75rem; }
-    td:first-child { white-space: normal; }
+    body.nav-open .nav-backdrop { opacity: 1; pointer-events: auto; }
+
+    .topbar-brand { display: none; }
+    .search-wrap { max-width: none; }
+    .h2-actions { opacity: 1; transform: none; }
+  }
+
+  @media (max-width: 560px) {
+    body { font-size: 15px; }
+    .topbar { gap: 0.45rem; padding: 0 0.7rem; }
+    .topbar-actions .icon-btn { width: 34px; height: 34px; }
+    #search { padding-right: 74px; font-size: 0.82rem; }
+    .search-count { font-size: 0.6rem; padding: 0.12rem 0.4rem; }
+    .table-grid { grid-template-columns: 1fr; }
+    h2 { font-size: 1.28rem; }
+    .fab { right: 14px; bottom: 14px; }
+  }
+
+  /* ============================================================
+     ACCESSIBILITY / PRINT
+     ============================================================ */
+  @media (prefers-reduced-motion: reduce) {
+    html { scroll-behavior: auto; }
+    *, *::before, *::after {
+      animation-duration: 0.001ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.001ms !important;
+    }
+    .js section.section { opacity: 1; transform: none; }
   }
 
   @media print {
-    .sidebar { display: none; }
-    .layout { display: block; max-width: none; }
-    body { background: #fff; color: #000; }
-    h2, h3, strong, td:first-child { color: #000; }
-    .table-wrap { border-color: #ccc; }
+    .topbar, .sidebar, .fab, .toast, .nav-backdrop, .h2-actions, .progress-track { display: none !important; }
+    .layout { display: block; max-width: none; padding: 0; }
+    body { background: #fff; color: #000; font-size: 11pt; }
+    section { break-inside: avoid-page; }
+    h2, h3, strong, td:first-child, header.page-head h1 em { color: #000 !important; }
+    h3::before { display: none; }
+    .table-wrap { border-color: #bbb; box-shadow: none; }
+    thead th { background: #eee !important; color: #000; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+    a { color: #000; text-decoration: none; }
   }
 </style>
 </head>
 <body>
 
+<!-- ================= TOP BAR ================= -->
+<header class="topbar">
+  <button class="nav-toggle" id="navToggle" aria-label="Toggle navigation" aria-expanded="false">
+    <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+      <line x1="4" y1="7" x2="20" y2="7"/><line x1="4" y1="12" x2="20" y2="12"/><line x1="4" y1="17" x2="20" y2="17"/>
+    </svg>
+  </button>
+
+  <div class="topbar-brand">
+    <span class="dot" aria-hidden="true"></span>
+    VALORANT <span>/ Core Logic</span>
+  </div>
+
+  <div class="search-wrap">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+      <circle cx="11" cy="11" r="7"/><line x1="16.5" y1="16.5" x2="21" y2="21"/>
+    </svg>
+    <input id="search" type="search" placeholder="Search notes… ( / )" autocomplete="off" spellcheck="false" aria-label="Search notes" />
+    <span class="search-count" id="searchCount"></span>
+  </div>
+
+  <div class="topbar-actions">
+    <button class="icon-btn" id="randomTip" title="Random tip" aria-label="Show a random tip">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <rect x="3" y="3" width="18" height="18" rx="3"/>
+        <circle cx="8.5" cy="8.5" r="1.3" fill="currentColor" stroke="none"/>
+        <circle cx="15.5" cy="15.5" r="1.3" fill="currentColor" stroke="none"/>
+        <circle cx="15.5" cy="8.5" r="1.3" fill="currentColor" stroke="none"/>
+        <circle cx="8.5" cy="15.5" r="1.3" fill="currentColor" stroke="none"/>
+      </svg>
+    </button>
+    <button class="icon-btn" id="themeToggle" title="Toggle theme" aria-label="Toggle colour theme">
+      <span id="themeIcon">🌙</span>
+    </button>
+    <button class="icon-btn" id="printBtn" title="Print / Save as PDF" aria-label="Print page">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M6 9V3h12v6"/><rect x="3" y="9" width="18" height="8" rx="2"/>
+        <path d="M6 14h12v7H6z"/>
+      </svg>
+    </button>
+  </div>
+
+  <div class="progress-track" aria-hidden="true"><div class="progress-fill" id="progressFill"></div></div>
+</header>
+
+<div class="nav-backdrop" id="navBackdrop" aria-hidden="true"></div>
+
+<!-- ================= LAYOUT ================= -->
 <div class="layout">
 
-  <!-- ================= SIDEBAR ================= -->
-  <aside class="sidebar">
+  <!-- ---------- SIDEBAR ---------- -->
+  <aside class="sidebar" id="sidebar">
     <div class="brand">Valorant</div>
     <div class="brand-sub">Core Game Logic · Field Manual</div>
 
@@ -327,18 +875,23 @@
         <li><a href="#open-questions">Open Questions</a></li>
       </ul>
     </nav>
+
+    <div class="sidebar-foot">
+      Press <kbd>/</kbd> to search · <kbd>Esc</kbd> to clear · <kbd>T</kbd> for a random tip
+    </div>
   </aside>
 
-  <!-- ================= MAIN ================= -->
+  <!-- ---------- MAIN ---------- -->
   <main>
 
     <header class="page-head">
-      <h1>Core Game Logic<span>.</span></h1>
+      <h1>Core Game Logic<em>.</em></h1>
       <p>A working manual of Valorant principles — peeking, trading, economy, utility, round flow and mentality — organised from first principles down to rank-by-rank progression.</p>
+      <div class="stats" id="stats"></div>
     </header>
 
-    <!-- ---------- CORE ---------- -->
-    <section id="core">
+    <!-- ============ 01 CORE ============ -->
+    <section id="core" class="section">
       <h2><span class="num">01</span>Core Game Logic</h2>
       <ol class="rules">
         <li><strong>Peeker's advantage is real</strong> — the swinger sees the holder first, so holding is only good when the angle favors you (pixel, off angle) or someone trades you. This is why swing wider in the open, jiggle before committing, and hold wider with an AWP.</li>
@@ -353,8 +906,8 @@
       </ol>
     </section>
 
-    <!-- ---------- PREP ---------- -->
-    <section id="prep">
+    <!-- ============ 02 PREP ============ -->
+    <section id="prep" class="section">
       <h2><span class="num">02</span>Prep, Aim, Warmup</h2>
       <ul>
         <li><strong>Body first:</strong> sleep, water, food, exercise — because performance is physical before it's mechanical.</li>
@@ -374,8 +927,8 @@
       </ul>
     </section>
 
-    <!-- ---------- MOVEMENT ---------- -->
-    <section id="movement">
+    <!-- ============ 03 MOVEMENT ============ -->
+    <section id="movement" class="section">
       <h2><span class="num">03</span>Movement, Peeking, Jiggling, Clearing</h2>
       <ul>
         <li><strong>AD peek:</strong> peek an angle, try to kill, go back — if you must live, jiggle back.</li>
@@ -401,17 +954,15 @@
       </ul>
     </section>
 
-    <!-- ---------- GUNPLAY ---------- -->
-    <section id="gunplay">
+    <!-- ============ 04 GUNPLAY ============ -->
+    <section id="gunplay" class="section">
       <h2><span class="num">04</span>Gunplay and Economy</h2>
 
       <h3>Buy Tables</h3>
       <div class="table-grid">
         <div class="table-wrap">
           <table>
-            <thead>
-              <tr><th>Attacker</th><th>Buy</th></tr>
-            </thead>
+            <thead><tr><th>Attacker</th><th>Buy</th></tr></thead>
             <tbody>
               <tr><td>Pistol</td><td>Pistol</td></tr>
               <tr><td>2nd</td><td>Force</td></tr>
@@ -423,9 +974,7 @@
 
         <div class="table-wrap">
           <table>
-            <thead>
-              <tr><th>Defender</th><th>Buy</th></tr>
-            </thead>
+            <thead><tr><th>Defender</th><th>Buy</th></tr></thead>
             <tbody>
               <tr><td>Pistol</td><td>Pistol</td></tr>
               <tr><td>2nd</td><td>Eco</td></tr>
@@ -439,9 +988,7 @@
         </div>
       </div>
 
-      <div class="callout info">
-        Defenders can force 2nd instead of eco; then things get weird.
-      </div>
+      <div class="callout info">Defenders can force 2nd instead of eco; then things get weird.</div>
 
       <h3>Economy Rules</h3>
       <ul>
@@ -464,9 +1011,7 @@
       <h3>Guns</h3>
       <div class="table-wrap">
         <table>
-          <thead>
-            <tr><th>Gun</th><th>Play it when / constraint</th></tr>
-          </thead>
+          <thead><tr><th>Gun</th><th>Play it when / constraint</th></tr></thead>
           <tbody>
             <tr><td>Classic</td><td>Close range; right-click beyond; spam-crouch and jump-spot right-click.</td></tr>
             <tr><td>Shorty</td><td>Very close; only with a plan (camp smoke, slide, dash, jump-peek TP); pairs with AWP.</td></tr>
@@ -498,8 +1043,8 @@
       </ul>
     </section>
 
-    <!-- ---------- ROUND FLOW ---------- -->
-    <section id="rounds">
+    <!-- ============ 05 ROUND FLOW ============ -->
+    <section id="rounds" class="section">
       <h2><span class="num">05</span>Round Flow and Decisions</h2>
 
       <h3 id="attack">Attack</h3>
@@ -578,8 +1123,8 @@
       </ul>
     </section>
 
-    <!-- ---------- UTILITY ---------- -->
-    <section id="utility">
+    <!-- ============ 06 UTILITY ============ -->
+    <section id="utility" class="section">
       <h2><span class="num">06</span>Utility and Ults</h2>
       <ul>
         <li><strong>Overuse util early</strong> — people start aggressive and full of ego; util-dumping conditions them to back off. Once they stop resisting (A main), use less (Phoenix flash instead of blind+nade); if they flash, stun back.</li>
@@ -601,8 +1146,8 @@
       </ul>
     </section>
 
-    <!-- ---------- AGENTS ---------- -->
-    <section id="agents">
+    <!-- ============ 07 AGENTS ============ -->
+    <section id="agents" class="section">
       <h2><span class="num">07</span>Agents</h2>
       <ul>
         <li><strong>3 agents max</strong> — depth beats breadth.</li>
@@ -617,8 +1162,8 @@
       </ul>
     </section>
 
-    <!-- ---------- IMPROVEMENT ---------- -->
-    <section id="improvement">
+    <!-- ============ 08 IMPROVEMENT ============ -->
+    <section id="improvement" class="section">
       <h2><span class="num">08</span>Improvement Method</h2>
       <ul>
         <li><strong>One skill, fully focused, for at least 5 games</strong> — because split attention teaches nothing.</li>
@@ -627,8 +1172,8 @@
       </ul>
     </section>
 
-    <!-- ---------- MENTALITY ---------- -->
-    <section id="mentality">
+    <!-- ============ 09 MENTALITY ============ -->
+    <section id="mentality" class="section">
       <h2><span class="num">09</span>Mentality and Solo Q</h2>
       <ul>
         <li><strong>Mute text and enemy chat</strong>, habitually mute team on load; best response is <strong>"Sorry, I made a mistake"</strong> — arguing costs rounds.</li>
@@ -641,14 +1186,13 @@
       </ul>
     </section>
 
-    <!-- ---------- RANKS ---------- -->
-    <section id="ranks">
+    <!-- ============ 10 RANKS ============ -->
+    <section id="ranks" class="section">
       <h2><span class="num">10</span>Rank Progression Appendix</h2>
-      <div class="table-wrap">
-        <table>
-          <thead>
-            <tr><th>Rank</th><th>Skills unlocked</th></tr>
-          </thead>
+
+      <div class="table-wrap" id="ranksTableWrap">
+        <table id="ranksTable">
+          <thead><tr><th>Rank</th><th>Skills unlocked</th></tr></thead>
           <tbody>
             <tr><td>Iron</td><td>AD peek, orb farming, cover discipline, the 99% rotation, jiggling, util from cover</td></tr>
             <tr><td>Bronze</td><td>Die A go B, 40% flanking, force buys, A/D tap-strafe, attack/defense fundamentals, aggression triggers</td></tr>
@@ -661,11 +1205,12 @@
           </tbody>
         </table>
       </div>
-      <p><span class="pill">Note</span> <em>Choose Where To Push — Diamond (coming soon).</em></p>
+
+      <p><em>Choose Where To Push — Diamond (notes coming soon).</em></p>
     </section>
 
-    <!-- ---------- OPEN QUESTIONS ---------- -->
-    <section id="open-questions">
+    <!-- ============ 11 OPEN QUESTIONS ============ -->
+    <section id="open-questions" class="section">
       <h2><span class="num">11</span>Open Questions</h2>
       <ul>
         <li><strong>AWP agent list vs the principle.</strong> The stated law is "free escape after the shot," which strictly covers Jett, Chamber, Yoru, Waylay. Week 4 also lists Raze, Neon, and Reyna — Raze/Neon have mobility but no clean post-shot escape, Reyna's dismiss requires a kill. Resolve: which list governs?</li>
@@ -692,32 +1237,566 @@
   </main>
 </div>
 
+<!-- ================= FLOATING UI ================= -->
+<button class="fab" id="backToTop" aria-label="Back to top">
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+    <polyline points="6 14 12 8 18 14"/>
+  </svg>
+</button>
+
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+
 <script>
-  // Highlight the current section in the sidebar
-  (function () {
-    const links = Array.from(document.querySelectorAll('nav a'));
-    const targets = links
-      .map(a => document.querySelector(a.getAttribute('href')))
-      .filter(Boolean);
+/* ============================================================================
+   0. HELPERS
+   ============================================================================ */
+const $  = (sel, ctx = document) => ctx.querySelector(sel);
+const $$ = (sel, ctx = document) => Array.from(ctx.querySelectorAll(sel));
+const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
-    if (!('IntersectionObserver' in window) || targets.length === 0) return;
+let toastTimer = null;
+function showToast(html, timeout = 4200) {
+  const t = $('#toast');
+  t.innerHTML = html;
+  t.classList.add('show');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => t.classList.remove('show'), timeout);
+}
 
-    const setActive = (id) => {
-      links.forEach(a => a.classList.toggle('active', a.getAttribute('href') === '#' + id));
-    };
+function copyText(text) {
+  if (navigator.clipboard && window.isSecureContext) {
+    return navigator.clipboard.writeText(text);
+  }
+  // Fallback for file:// or older browsers
+  return new Promise((resolve, reject) => {
+    const ta = document.createElement('textarea');
+    ta.value = text;
+    ta.style.position = 'fixed';
+    ta.style.opacity = '0';
+    document.body.appendChild(ta);
+    ta.select();
+    try { document.execCommand('copy'); resolve(); }
+    catch (e) { reject(e); }
+    finally { document.body.removeChild(ta); }
+  });
+}
 
-    const observer = new IntersectionObserver((entries) => {
-      const visible = entries
-        .filter(e => e.isIntersecting)
-        .sort((a, b) => b.intersectionRatio - a.intersectionRatio);
-      if (visible.length) setActive(visible[0].target.id);
-    }, {
-      rootMargin: '-10% 0px -70% 0px',
-      threshold: [0, 0.25, 0.5, 1]
+/* ============================================================================
+   1. THEME
+   ============================================================================ */
+const THEME_KEY = 'valorant-notes-theme';
+const themeIcon = $('#themeIcon');
+
+function applyTheme(theme) {
+  document.documentElement.setAttribute('data-theme', theme);
+  themeIcon.textContent = theme === 'light' ? '☀️' : '🌙';
+  try { localStorage.setItem(THEME_KEY, theme); } catch (e) {}
+}
+
+(function initTheme() {
+  let saved = null;
+  try { saved = localStorage.getItem(THEME_KEY); } catch (e) {}
+  const prefersLight = window.matchMedia('(prefers-color-scheme: light)').matches;
+  applyTheme(saved || (prefersLight ? 'light' : 'dark'));
+})();
+
+$('#themeToggle').addEventListener('click', () => {
+  const current = document.documentElement.getAttribute('data-theme');
+  applyTheme(current === 'light' ? 'dark' : 'light');
+});
+
+/* ============================================================================
+   2. READING PROGRESS + BACK TO TOP + FAB
+   ============================================================================ */
+const progressFill = $('#progressFill');
+const backToTop = $('#backToTop');
+
+function onScroll() {
+  const doc = document.documentElement;
+  const max = doc.scrollHeight - doc.clientHeight;
+  const pct = max > 0 ? Math.min(100, (doc.scrollTop / max) * 100) : 0;
+  progressFill.style.width = pct + '%';
+  backToTop.classList.toggle('show', doc.scrollTop > 600);
+}
+window.addEventListener('scroll', onScroll, { passive: true });
+window.addEventListener('resize', onScroll);
+onScroll();
+
+backToTop.addEventListener('click', () => {
+  window.scrollTo({ top: 0, behavior: prefersReducedMotion ? 'auto' : 'smooth' });
+});
+
+/* ============================================================================
+   3. MOBILE NAV DRAWER
+   ============================================================================ */
+const navToggle = $('#navToggle');
+const navBackdrop = $('#navBackdrop');
+
+function setNav(open) {
+  document.body.classList.toggle('nav-open', open);
+  navToggle.setAttribute('aria-expanded', String(open));
+  document.body.style.overflow = open ? 'hidden' : '';
+}
+
+navToggle.addEventListener('click', () => setNav(!document.body.classList.contains('nav-open')));
+navBackdrop.addEventListener('click', () => setNav(false));
+
+/* ============================================================================
+   4. SECTION WRAPPING, COLLAPSE + COPY-LINK BUTTONS
+   ============================================================================ */
+const sections = $$('main > section');
+
+sections.forEach((sec, index) => {
+  const h2 = sec.querySelector('h2');
+  if (!h2) return;
+
+  /* --- wrap everything after the h2 into an animated, collapsible body --- */
+  const body = document.createElement('div');
+  body.className = 'section-body';
+  const inner = document.createElement('div');
+  inner.className = 'section-inner';
+  body.appendChild(inner);
+
+  let node = h2.nextSibling;
+  while (node) {
+    const next = node.nextSibling;
+    inner.appendChild(node);
+    node = next;
+  }
+  sec.appendChild(body);
+
+  /* --- heading action buttons --- */
+  const actions = document.createElement('span');
+  actions.className = 'h2-actions';
+
+  const copyBtn = document.createElement('button');
+  copyBtn.type = 'button';
+  copyBtn.className = 'icon-btn copy-link';
+  copyBtn.title = 'Copy link to this section';
+  copyBtn.setAttribute('aria-label', 'Copy link to this section');
+  copyBtn.innerHTML =
+    '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">' +
+    '<path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/>' +
+    '<path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/>' +
+    '</svg>';
+  copyBtn.addEventListener('click', () => {
+    const url = location.origin + location.pathname + location.search + '#' + sec.id;
+    copyText(url)
+      .then(() => showToast('<span class="toast-tag">Link copied</span>#' + sec.id))
+      .catch(() => showToast('Could not copy — your browser blocked clipboard access.'));
+  });
+
+  const collapseBtn = document.createElement('button');
+  collapseBtn.type = 'button';
+  collapseBtn.className = 'icon-btn collapse-btn';
+  collapseBtn.title = 'Collapse / expand section';
+  collapseBtn.setAttribute('aria-expanded', 'true');
+  collapseBtn.setAttribute('aria-label', 'Collapse section');
+  collapseBtn.innerHTML =
+    '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">' +
+    '<polyline points="6 9 12 15 18 9"/></svg>';
+  collapseBtn.addEventListener('click', () => {
+    const collapsed = sec.classList.toggle('is-collapsed');
+    collapseBtn.setAttribute('aria-expanded', String(!collapsed));
+    collapseBtn.setAttribute('aria-label', collapsed ? 'Expand section' : 'Collapse section');
+  });
+
+  actions.appendChild(copyBtn);
+  actions.appendChild(collapseBtn);
+  h2.appendChild(actions);
+
+  /* --- double-click the heading to collapse too --- */
+  h2.addEventListener('dblclick', (e) => {
+    if (e.target.closest('button')) return;
+    collapseBtn.click();
+  });
+});
+
+/* ============================================================================
+   5. SCROLL-SPY SIDEBAR
+   ============================================================================ */
+const navLinks = $$('nav a');
+const spyTargets = navLinks
+  .map(a => {
+    const id = a.getAttribute('href');
+    return id && id.startsWith('#') ? document.querySelector(id) : null;
+  })
+  .filter(Boolean);
+
+let spyLocked = false;
+
+function setActiveLink(id) {
+  navLinks.forEach(a => a.classList.toggle('active', a.getAttribute('href') === '#' + id));
+}
+
+if ('IntersectionObserver' in window && spyTargets.length) {
+  const observer = new IntersectionObserver((entries) => {
+    if (spyLocked) return;
+    const visible = entries
+      .filter(e => e.isIntersecting)
+      .sort((a, b) => b.intersectionRatio - a.intersectionRatio);
+    if (visible.length) setActiveLink(visible[0].target.id);
+  }, {
+    rootMargin: '-12% 0px -68% 0px',
+    threshold: [0, 0.2, 0.45, 0.75, 1]
+  });
+  spyTargets.forEach(t => observer.observe(t));
+} else {
+  // Fallback: position-based
+  window.addEventListener('scroll', () => {
+    if (spyLocked) return;
+    let current = spyTargets[0];
+    spyTargets.forEach(t => {
+      if (t.getBoundingClientRect().top <= 120) current = t;
+    });
+    if (current) setActiveLink(current.id);
+  }, { passive: true });
+}
+
+/* clicking a TOC link: expand collapsed section, close mobile drawer */
+navLinks.forEach(a => {
+  a.addEventListener('click', () => {
+    const id = a.getAttribute('href');
+    const target = id && id.startsWith('#') ? document.querySelector(id) : null;
+
+    if (target) {
+      const section = target.closest('section');
+      if (section && section.classList.contains('is-collapsed')) {
+        section.classList.remove('is-collapsed');
+        const btn = section.querySelector('.collapse-btn');
+        if (btn) btn.setAttribute('aria-expanded', 'true');
+      }
+      setActiveLink(target.id);
+      spyLocked = true;
+      setTimeout(() => { spyLocked = false; }, 900);
+    }
+
+    if (document.body.classList.contains('nav-open')) setNav(false);
+  });
+});
+
+/* ============================================================================
+   6. SECTION REVEAL ON SCROLL
+   ============================================================================ */
+if ('IntersectionObserver' in window && !prefersReducedMotion) {
+  const revealObserver = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) {
+        entry.target.classList.add('is-visible');
+        revealObserver.unobserve(entry.target);
+      }
+    });
+  }, { rootMargin: '0px 0px -8% 0px', threshold: 0.05 });
+
+  sections.forEach(sec => revealObserver.observe(sec));
+} else {
+  sections.forEach(sec => sec.classList.add('is-visible'));
+}
+
+/* ============================================================================
+   7. SEARCH WITH HIGHLIGHT + SECTION FILTERING
+   ============================================================================ */
+const searchInput = $('#search');
+const searchCount = $('#searchCount');
+const contentRoot = $('main');
+const MIN_QUERY = 2;
+let searchDebounce = null;
+
+function escapeRegExp(str) {
+  return str.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+}
+
+function clearHighlights() {
+  $$('mark.search-hit', contentRoot).forEach(mark => {
+    const textNode = document.createTextNode(mark.textContent);
+    mark.parentNode.replaceChild(textNode, mark);
+    textNode.parentNode.normalize();
+  });
+  sections.forEach(s => s.classList.remove('search-hidden'));
+  navLinks.forEach(a => a.classList.remove('search-dim'));
+}
+
+function expandAllSections() {
+  sections.forEach(s => {
+    if (s.classList.contains('is-collapsed')) {
+      s.classList.remove('is-collapsed');
+      const btn = s.querySelector('.collapse-btn');
+      if (btn) btn.setAttribute('aria-expanded', 'true');
+    }
+  });
+}
+
+function performSearch(rawQuery) {
+  clearHighlights();
+
+  const query = rawQuery.trim();
+  if (query.length < MIN_QUERY) {
+    searchCount.textContent = '';
+    return;
+  }
+
+  expandAllSections();
+
+  const regex = new RegExp(escapeRegExp(query), 'gi');
+
+  /* --- collect matching text nodes first (mutating while walking is unsafe) --- */
+  const walker = document.createTreeWalker(contentRoot, NodeFilter.SHOW_TEXT, {
+    acceptNode(node) {
+      if (!node.nodeValue || !node.nodeValue.trim()) return NodeFilter.FILTER_REJECT;
+      if (node.parentElement && node.parentElement.closest('mark.search-hit, script, style, .search-count')) {
+        return NodeFilter.FILTER_REJECT;
+      }
+      regex.lastIndex = 0;
+      return regex.test(node.nodeValue) ? NodeFilter.FILTER_ACCEPT : NodeFilter.FILTER_REJECT;
+    }
+  });
+
+  const matches = [];
+  let n;
+  while ((n = walker.nextNode())) matches.push(n);
+
+  /* --- wrap every match in <mark> --- */
+  matches.forEach(textNode => {
+    const text = textNode.nodeValue;
+    const frag = document.createDocumentFragment();
+    let lastIndex = 0;
+    let m;
+    regex.lastIndex = 0;
+
+    while ((m = regex.exec(text)) !== null) {
+      if (m.index > lastIndex) {
+        frag.appendChild(document.createTextNode(text.slice(lastIndex, m.index)));
+      }
+      const mark = document.createElement('mark');
+      mark.className = 'search-hit';
+      mark.textContent = m[0];
+      frag.appendChild(mark);
+      lastIndex = m.index + m[0].length;
+      if (m[0].length === 0) regex.lastIndex++; // guard against zero-length matches
+    }
+
+    if (lastIndex < text.length) {
+      frag.appendChild(document.createTextNode(text.slice(lastIndex)));
+    }
+
+    textNode.parentNode.replaceChild(frag, textNode);
+  });
+
+  const hitCount = $$('mark.search-hit', contentRoot).length;
+
+  /* --- hide non-matching sections --- */
+  sections.forEach(sec => {
+    if (!sec.querySelector('mark.search-hit')) sec.classList.add('search-hidden');
+  });
+
+  /* --- dim TOC entries pointing at hidden sections --- */
+  navLinks.forEach(a => {
+    const href = a.getAttribute('href');
+    const target = href && href.startsWith('#') ? document.querySelector(href) : null;
+    if (target && target.classList.contains('search-hidden')) a.classList.add('search-dim');
+  });
+
+  searchCount.textContent = hitCount ? hitCount + (hitCount === 1 ? ' hit' : ' hits') : 'no hits';
+}
+
+searchInput.addEventListener('input', (e) => {
+  clearTimeout(searchDebounce);
+  const value = e.target.value;
+  searchDebounce = setTimeout(() => performSearch(value), 140);
+});
+
+searchInput.addEventListener('keydown', (e) => {
+  if (e.key === 'Escape') {
+    searchInput.value = '';
+    performSearch('');
+    searchInput.blur();
+  }
+});
+
+/* ============================================================================
+   8. KEYBOARD SHORTCUTS
+   ============================================================================ */
+document.addEventListener('keydown', (e) => {
+  const active = document.activeElement;
+  const typing = active && (
+    active.tagName === 'INPUT' ||
+    active.tagName === 'TEXTAREA' ||
+    active.isContentEditable
+  );
+
+  if (e.key === '/' && !typing) {
+    e.preventDefault();
+    searchInput.focus();
+    searchInput.select();
+    return;
+  }
+
+  if (e.key === 'Escape') {
+    if (document.body.classList.contains('nav-open')) {
+      setNav(false);
+      return;
+    }
+    if (typing && active === searchInput) {
+      searchInput.blur();
+      return;
+    }
+    const toast = $('#toast');
+    if (toast.classList.contains('show')) toast.classList.remove('show');
+    return;
+  }
+
+  if ((e.key === 't' || e.key === 'T') && !typing && !e.metaKey && !e.ctrlKey && !e.altKey) {
+    e.preventDefault();
+    showRandomTip();
+  }
+});
+
+/* ============================================================================
+   9. RANDOM TIP
+   ============================================================================ */
+const tipPool = $$('#core li, #movement li, #numbers li, #utility li, #mentality li')
+  .map(li => li.textContent.replace(/\s+/g, ' ').trim())
+  .filter(text => text.length > 40);
+
+function showRandomTip() {
+  if (!tipPool.length) return;
+  const tip = tipPool[Math.floor(Math.random() * tipPool.length)];
+  showToast('<span class="toast-tag">Random tip</span>' + tip, 7000);
+}
+
+$('#randomTip').addEventListener('click', showRandomTip);
+
+/* ============================================================================
+   10. RANK MASTERY TRACKER
+   ============================================================================ */
+(function initRankTracker() {
+  const RANK_KEY = 'valorant-notes-ranks';
+  const table = $('#ranksTable');
+  const wrap = $('#ranksTableWrap');
+  if (!table || !wrap) return;
+
+  const tbody = table.querySelector('tbody');
+  const rows = Array.from(tbody.querySelectorAll('tr'));
+  if (!rows.length) return;
+
+  /* --- progress meter above the table --- */
+  const meter = document.createElement('div');
+  meter.className = 'rank-meter';
+  meter.innerHTML =
+    '<div class="rank-meter-track"><div class="rank-meter-fill" id="rankFill"></div></div>' +
+    '<span id="rankLabel">0 / ' + rows.length + ' mastered</span>';
+  wrap.parentNode.insertBefore(meter, wrap);
+
+  const rankFill = $('#rankFill');
+  const rankLabel = $('#rankLabel');
+
+  /* --- header cell for checkboxes --- */
+  const headRow = table.querySelector('thead tr');
+  const checkTh = document.createElement('th');
+  checkTh.textContent = '✓';
+  checkTh.style.width = '46px';
+  checkTh.style.textAlign = 'center';
+  headRow.insertBefore(checkTh, headRow.firstChild);
+
+  /* --- restore saved state --- */
+  let saved = [];
+  try { saved = JSON.parse(localStorage.getItem(RANK_KEY) || '[]'); } catch (e) { saved = []; }
+  const savedSet = new Set(Array.isArray(saved) ? saved : []);
+
+  const checkboxes = [];
+
+  rows.forEach(row => {
+    const rankCell = row.cells[0];
+    const rankName = rankCell.textContent.trim();
+
+    const cell = document.createElement('td');
+    cell.className = 'rank-check';
+
+    const cb = document.createElement('input');
+    cb.type = 'checkbox';
+    cb.checked = savedSet.has(rankName);
+    cb.setAttribute('aria-label', 'Mark ' + rankName + ' as mastered');
+
+    if (cb.checked) row.classList.add('rank-done');
+
+    cb.addEventListener('change', () => {
+      if (cb.checked) savedSet.add(rankName);
+      else savedSet.delete(rankName);
+
+      row.classList.toggle('rank-done', cb.checked);
+
+      try { localStorage.setItem(RANK_KEY, JSON.stringify(Array.from(savedSet))); } catch (e) {}
+
+      updateMeter();
+
+      if (cb.checked && savedSet.size === rows.length) {
+        showToast('<span class="toast-tag">All ranks mastered</span>Every rank unlocked. Now go take an off-angle nobody expects. 🏆', 6500);
+      }
     });
 
-    targets.forEach(t => observer.observe(t));
-  })();
+    cell.appendChild(cb);
+    row.insertBefore(cell, row.firstChild);
+    checkboxes.push(cb);
+  });
+
+  function updateMeter() {
+    const total = rows.length;
+    const done = checkboxes.filter(cb => cb.checked).length;
+    rankFill.style.width = (total ? (done / total) * 100 : 0) + '%';
+    rankLabel.textContent = done + ' / ' + total + ' mastered';
+  }
+
+  updateMeter();
+})();
+
+/* ============================================================================
+   11. PRINT BUTTON
+   ============================================================================ */
+$('#printBtn').addEventListener('click', () => {
+  window.print();
+});
+
+/* ============================================================================
+   12. HEADER STATS
+   ============================================================================ */
+(function buildStats() {
+  const statsEl = $('#stats');
+  if (!statsEl) return;
+
+  const wordCount = (contentRoot.innerText.match(/\S+/g) || []).length;
+  const readMinutes = Math.max(1, Math.round(wordCount / 220));
+  const principleCount = $$('#core .section-inner > ol > li').length;
+  const gunCount = $$('#gunplay table').length
+    ? $$('#gunplay table tbody tr').length
+    : 0;
+  const rankCount = $$('#ranksTable tbody tr').length;
+
+  statsEl.innerHTML = items
+    .map(([label, value]) => '<span class="stat">' + label + ' <b>' + value + '</b></span>')
+    .join('');
+})();
+
+/* ============================================================================
+   13. INIT — highlight the hash target if the page loads with one
+   ============================================================================ */
+window.addEventListener('load', () => {
+  if (location.hash) {
+    const target = document.querySelector(location.hash);
+    if (target) {
+      const section = target.closest('section');
+      if (section) {
+        section.classList.add('is-visible');
+        if (section.classList.contains('is-collapsed')) {
+          section.classList.remove('is-collapsed');
+          const btn = section.querySelector('.collapse-btn');
+          if (btn) btn.setAttribute('aria-expanded', 'true');
+        }
+      }
+      setActiveLink(target.id);
+    }
+  }
+  onScroll();
+});
 </script>
 
 </body>
