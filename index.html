@@ -872,6 +872,7 @@
         <li><a href="#improvement">Improvement Method</a></li>
         <li><a href="#mentality">Mentality &amp; Solo Q</a></li>
         <li><a href="#ranks">Rank Progression</a></li>
+        <li><a href="#comms">Pro Comms</a></li>
         <li><a href="#open-questions">Open Questions</a></li>
       </ul>
     </nav>
@@ -886,7 +887,7 @@
 
     <header class="page-head">
       <h1>Valorant Maxxing<em>.</em></h1>
-      <p>A working manual of Valorant principles — peeking, trading, economy, utility, round flow and mentality — organised from first principles down to rank-by-rank progression.</p>
+      <p>A working manual of Valorant principles — peeking, trading, economy, utility, round flow, comms and mentality — organised from first principles down to rank-by-rank progression.</p>
       <div class="stats" id="stats"></div>
     </header>
 
@@ -1209,9 +1210,41 @@
       <p><em>Choose Where To Push — Diamond (notes coming soon).</em></p>
     </section>
 
-    <!-- ============ 11 OPEN QUESTIONS ============ -->
+    <!-- ============ 11 PRO COMMS ============ -->
+    <section id="comms" class="section">
+      <h2><span class="num">11</span>Pro Comms</h2>
+
+      <h3>Information Coms</h3>
+      <ul>
+        <li>Giving your team facts</li>
+        <li>Clean, useful information</li>
+        <li>Helps you and your team make smarter plays and decisions</li>
+      </ul>
+
+      <h3>Intention Coms</h3>
+      <ul>
+        <li>What you're doing</li>
+        <li>What you are going to do</li>
+      </ul>
+
+      <h3>Coordination Coms</h3>
+      <ul>
+        <li>What you want your teammates to do</li>
+        <li>Keep your calls simple and specific</li>
+        <li>Focus only on the players near you (unless you're the IGL in a tournament — then you need to know)</li>
+      </ul>
+
+      <h3>Vibe Coms</h3>
+      <ul>
+        <li>Keep the energy high (glaze your teammates for winning)</li>
+        <li>Help the team stay locked into the present moment (if a mistake happened, move on and play round by round)</li>
+        <li>Avoid toxic coms (don't attack your teammates' play or anything)</li>
+      </ul>
+    </section>
+
+    <!-- ============ 12 OPEN QUESTIONS ============ -->
     <section id="open-questions" class="section">
-      <h2><span class="num">11</span>Open Questions</h2>
+      <h2><span class="num">12</span>Open Questions</h2>
       <ul>
         <li><strong>AWP agent list vs the principle.</strong> The stated law is "free escape after the shot," which strictly covers Jett, Chamber, Yoru, Waylay. Week 4 also lists Raze, Neon, and Reyna — Raze/Neon have mobility but no clean post-shot escape, Reyna's dismiss requires a kill. Resolve: which list governs?</li>
         <li><strong>1HP definition</strong> — "&lt;40 HP (and maybe &lt;81 HP)" — the 81 threshold is unclear; 40 is used for every rule.</li>
@@ -1231,7 +1264,7 @@
     </section>
 
     <footer>
-      <p>Compiled reference — Valorant core game logic, mechanics, economy, round flow, utility and mentality. Print-friendly.</p>
+      <p>Compiled reference — Valorant core game logic, mechanics, economy, round flow, utility, comms and mentality. Print-friendly.</p>
     </footer>
 
   </main>
@@ -1757,7 +1790,7 @@ $('#printBtn').addEventListener('click', () => {
 });
 
 /* ============================================================================
-   12. HEADER STATS
+   12. HEADER STATS  (BUG FIX: define `items`, use last table for gun count)
    ============================================================================ */
 (function buildStats() {
   const statsEl = $('#stats');
@@ -1766,10 +1799,21 @@ $('#printBtn').addEventListener('click', () => {
   const wordCount = (contentRoot.innerText.match(/\S+/g) || []).length;
   const readMinutes = Math.max(1, Math.round(wordCount / 220));
   const principleCount = $$('#core .section-inner > ol > li').length;
-  const gunCount = $$('#gunplay table').length
-    ? $$('#gunplay table tbody tr').length
-    : 0;
+
+  /* Use the *last* table in #gunplay (the guns table) — the first two are
+     the attacker/defender buy tables, which would inflate the count. */
+  const gunTables = $$('#gunplay table');
+  const gunsTable = gunTables.length ? gunTables[gunTables.length - 1] : null;
+  const gunCount = gunsTable ? gunsTable.querySelectorAll('tbody tr').length : 0;
+
   const rankCount = $$('#ranksTable tbody tr').length;
+
+  const items = [
+    ['principles', principleCount],
+    ['guns', gunCount],
+    ['ranks', rankCount],
+    ['min read', readMinutes]
+  ];
 
   statsEl.innerHTML = items
     .map(([label, value]) => '<span class="stat">' + label + ' <b>' + value + '</b></span>')
