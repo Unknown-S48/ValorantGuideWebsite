@@ -1,0 +1,348 @@
+/* Generated from data/content.json — do not edit by hand. Run scripts/build.sh after editing the JSON. */
+window.SITE_DATA = {
+  "meta": {
+    "title": "Valorant Maxxing — Immortal 3 Field Manual",
+    "pageHeading": "Valorant Maxxing.",
+    "headingEmphasis": ".",
+    "intro": "A working manual of Valorant principles — peeking, trading, economy, utility, round flow, comms and mentality — organised from first principles down to rank-by-rank progression.",
+    "brand": "Valorant",
+    "brandSub": "Immortal 3 · Field Manual",
+    "footer": "Compiled reference — Valorant core game logic, mechanics, economy, round flow, utility, comms and mentality. Print-friendly."
+  },
+  "sections": [
+    {
+      "id": "improvement",
+      "title": "Improvement Method",
+      "blocks": [
+        { "type": "list", "style": "ul", "items": [
+          { "text": "**One skill, fully focused, for at least 5 games** — because split attention teaches nothing." },
+          { "text": "**Cycle:** learn 1 skill → 1 skill → 2 at once → repeat; then zoom out to the big picture for a set." },
+          { "text": "**Learn what works:** find angles that favor holding over peeking and vice versa; if you win more there, it works for you; steal from Radiant VODs and pro util usage (only from players who play your agent)." }
+        ] }
+      ]
+    },
+    {
+      "id": "agents",
+      "title": "Agents",
+      "blocks": [
+        { "type": "list", "style": "ul", "items": [
+          { "text": "**3 agents max** — depth beats breadth." },
+          { "text": "**Roles on attack:** Duelist goes through the choke; Initiator util gets him past it; Controller smokes so there are fewer angles; Sentinel gets info and stops lurkers." },
+          { "text": "**Roles on defense:** Initiators use util for free space/info; Duelists play aggro (their life matters less); Controllers smoke chokes and stall; Sentinels stop pushes and lurk for info." },
+          { "text": "**Passive vs aggressive follows the kit:** Waylay uses everything to get on site, so she plays aggro after; Tejo/Astra have post-plant util, so they play passive." },
+          { "text": "**Out-of-system:** know what util does beyond the default execute (Waylay stun re-clearing B space post-plant); learn **1 execute per map** — it works ~90% of the time." },
+          { "text": "**Read enemy agents:** Skye + Jett at a choke → expect flash then dash, and punish the Jett out of dash recovery; Sova droning Haven sewer → kill the player behind the drone; known KJ setups → bait mollies; Jett dashed on retake → assume CT push; one-way Lotus C long/Summit → smoke it and pop-flash out with the team." },
+          { "text": "**Read players individually:** if you know a player's habit, punish it — the 24/7 lurker can be caught, the Duelist who always baits can be left to die." },
+          { "text": "**Comp counters:** many Duelists → spam the choke to break momentum; recon-heavy → no one-and-done cubbies, play long range/Op; many smokes → they must commit to one site; Senti-heavy → util past the flank util; fast comp → anchor more; slow comp → rotate more (their util takes ~7s, enough for a full retake)." },
+          { "text": "**Role choice:** Controller if you like creative smokes and being the foundation; Sentinel if you solo Q, punish bad players, and like watching flanks; Initiator if you like comms, constant progress, and cross-map impact without crazy aim; Duelist if you want to carry and punish mistakes (highest skill floor)." }
+        ] }
+      ]
+    },
+    {
+      "id": "prep",
+      "title": "Prep, Aim, Warmup",
+      "blocks": [
+        { "type": "list", "style": "ul", "items": [
+          { "text": "**Body first:** sleep, water, food, exercise — because performance is physical before it's mechanical." },
+          { "text": "**Wrist warm-ups** before playing — get blood to the hands so your first aim duels aren't cold." },
+          { "text": "**Warmup procedure:** 1) **10 min Range** on bots controlling the **Phantom spray** to learn the gun; 2) **2–3 DMs**." },
+          { "text": "**Aim routine (100% accuracy on every step):**", "children": { "style": "ol", "items": [
+            { "text": "5 bots — long strafe, track the head, counter-strafe, mix short strafes;" },
+            { "text": "strafe, track, shoot, flick to a 2nd bot, rapidly;" },
+            { "text": "stand far back, range shots outside the doorway;" },
+            { "text": "track all 5 bots 30s each, no shooting." }
+          ] } },
+          { "text": "**Aim trainer lessons:** copy how the best players do the task; **slow is smooth, smooth is fast**; light grip; finger not far above the mouse button." },
+          { "text": "**Peek focus:** crosshair placement behind the wall and **imagine the fight before you swing**; picture **1 angle**, lock focus for those seconds." },
+          { "text": "**Lock-in method (pre-round):** move your crosshair to 4 points and fully focus on the point on your crosshair — holding focus past the crosshair image means you're looking **10m ahead** (holding Heaven main, think you're standing in front of it)." }
+        ] }
+      ]
+    },
+    {
+      "id": "mentality",
+      "title": "Mentality and Solo Q",
+      "blocks": [
+        { "type": "list", "style": "ul", "items": [
+          { "text": "**Mute text and enemy chat**, habitually mute team on load; best response is **\"Sorry, I made a mistake\"** — arguing costs rounds." },
+          { "text": "**Analyze what went wrong; take breaks between games;** real-life confidence shows in game." },
+          { "text": "**Lower expectations:** they won't play correctly; have fun; don't expect anything; **don't feel pressured to push** when your team does something stupid (stun too early)." },
+          { "text": "**Stay solid:** it's always your fault; breathe under pressure; play at your own pace." },
+          { "text": "**Long-term confidence:** stay social — 2 weeks without talking to people makes you anxious." },
+          { "text": "**Double inhale:** big inhale as much as you can → pause → inhale again until full → inhale naturally → exhale slowly." },
+          { "text": "**Solo Q:** no hesitation or uncertainty; believe you're better than 90% of your rank; go for your play; show no respect. Fight IQ: know what your gun can take (don't swing long with a Classic) and be in the best position to take it. Mechanics: raw aim, crosshair placement tracking the wall angle (yay), movement." }
+        ] }
+      ]
+    },
+    {
+      "id": "core",
+      "title": "Core Game Logic",
+      "blocks": [
+        { "type": "list", "style": "ol", "class": "rules", "items": [
+          { "text": "**Peeker's advantage is real** — the swinger sees the holder first, so holding is only good when the angle favors you (pixel, off angle) or someone trades you. This is why swing wider in the open, jiggle before committing, and hold wider with an AWP." },
+          { "text": "**You only die to an angle you haven't cleared** — so clear one at a time (slice the pie) and use util to delete angles (smoke, flash, molly)." },
+          { "text": "**Trades beat 1v1s** — two guns with line of sight on one target wins; hence shoulder-to-shoulder trading, following your Duelist, and playing around a teammate's death." },
+          { "text": "**Utility buys space and time, not kills** — suppressing util moves enemies or keeps them back; punishing util converts a mistake. If you use util and nobody moves, you bought nothing." },
+          { "text": "**Info beats guessing** — jiggle, drone, recon, read habits; every guess is a coinflip you didn't have to take." },
+          { "text": "**Economy is math, not mood** — 3900/4700 thresholds, light armor vs no-damage util, force/bonus/eco are pre-planned." },
+          { "text": "**Animation locks lose rounds** — defusing, planting, Jett dash recovery, pulling out util: each is a window the enemy swings on." },
+          { "text": "**Habits are readable — yours too** — enemies repeat lurks, rotates, and jiggle patterns; swap yours (Die A go B, never jiggle the same way 3×)." },
+          { "text": "**Disadvantage is a signal to change the game** — down numbers, no util, or 1HP means stop holding: take 1v1s, flank, or push." }
+        ] }
+      ]
+    },
+    {
+      "id": "gunplay",
+      "title": "Gunplay and Economy",
+      "blocks": [
+        { "type": "heading", "text": "Buy Tables" },
+        { "type": "group", "class": "table-grid", "blocks": [
+          { "type": "table", "headers": ["Attacker", "Buy"], "rows": [
+            ["Pistol", "Pistol"],
+            ["2nd", "Force"],
+            ["3rd", "Bonus (make sure you can buy next with the guns you saved)"],
+            ["4th–7th", "Full"]
+          ] },
+          { "type": "table", "headers": ["Defender", "Buy"], "rows": [
+            ["Pistol", "Pistol"],
+            ["2nd", "Eco"],
+            ["3rd", "Full"],
+            ["4th", "Full"],
+            ["5th", "Eco"],
+            ["6th", "Full"],
+            ["7th", "Eco"]
+          ] }
+        ] },
+        { "type": "callout", "variant": "info", "text": "Defenders can force 2nd instead of eco; then things get weird." },
+        { "type": "heading", "text": "Economy Rules" },
+        { "type": "list", "style": "ul", "items": [
+          { "text": "**Key rule:** if the enemy has **no damage util**, buy **light armor** — their only damage is guns." },
+          { "text": "**Full buy:** anything works **until there's an AWP in play**, then your positions and peeks must change." },
+          { "text": "**Force round (eco guns):** Sheriff is best (damage); worst odds are **50/50**; focus on aim over everything; on pistol they **don't fake a site 99%** of the time." },
+          { "text": "**Economy rules:**", "children": { "style": "ol", "items": [
+            { "text": "If it's risky, don't — pushing alone mid on eco gives away a rifle." },
+            { "text": "**D = force, A = eco** (stay with a buddy)." },
+            { "text": "On force, have a way out vs good initiators." },
+            { "text": "On attack eco, take **1v1s with a Sheriff** (swing main)." },
+            { "text": "Silence is powerful — 5-man contact on force/eco." },
+            { "text": "Take range fights if guns allow (rifles); set up **short range** on short-range guns." }
+          ] } },
+          { "text": "**Force buy check:** if the gun was saved you can **DO NOT BUY**, but only if 4 teammates are buying; with 3, buy too — because a lone rifle in an eco fight is a gift." }
+        ] },
+        { "type": "heading", "text": "Guns" },
+        { "type": "table", "headers": ["Gun", "Play it when / constraint"], "rows": [
+          ["Classic", "Close range; right-click beyond; spam-crouch and jump-spot right-click."],
+          ["Shorty", "Very close; only with a plan (camp smoke, slide, dash, jump-peek TP); pairs with AWP."],
+          ["Frenzy", "Have a plan."],
+          ["Ghost", "Pistol only; versatile at any range, sprayable."],
+          ["Bandit", "Eco, close-range jiggle-peeks. (Not a standard Valorant gun — see Open Questions.)"],
+          ["Sheriff", "Don't commit past **35m**; jiggle-tap — body damage is enough; best on even rounds for pre-aim."],
+          ["Stinger", "Faster, stronger Frenzy; never bad on eco."],
+          ["Spectre", "Better Stinger; force or eco."],
+          ["Bucky", "Jiggle-tap on an angle; bad at long range — play close."],
+          ["Judge", "Better Bucky; post-nerf defensive — A/D peek only, no jump-peek."],
+          ["Bulldog", "Bonus-round gun; ADS 3-bullet burst is strong; **115 headshot**."],
+          ["Guardian", "Sharper fights and one-taps (needs mechanics)."],
+          ["Phantom", "All-around; spray smokes; better close range than Vandal."],
+          ["Vandal", "All-around; **30m+** long range."],
+          ["Marshal", "Anti-eco, after pistol; vs a buy round, early peeks for the head or A/D peek."],
+          ["Outlaw", "**If enemy has <3900 credits:** play it like an AWP."],
+          ["Operator", "Only on agents with a free escape after the shot (Jett, Chamber, Yoru, Waylay) — because it's one-shot-then-reposition; no escape means you die on the reload. That's why Jett works and Phoenix/Vyse don't."],
+          ["Ares / Odin", "Wall-bang spam; Ares if you can wall-bang, Odin to spam many walls with pre-aim."]
+        ] },
+        { "type": "list", "style": "ul", "items": [
+          { "text": "**AWP trigger:** at **4700 credits** buy the AWP over a Vandal — if your agent can escape. Without an escape, you need a plan: flash them off the line or smoke up and push with a flash." },
+          { "text": "**On angle with AWP:** make it a **pixel angle** so they can't see you and you can get out. **Off angle:** hold wider than closer when you know they'll swing." },
+          { "text": "**Inward wall:** attackers have the swing advantage, so hold wider (Haven A long; flat wall like Ascent also counts)." },
+          { "text": "**Your call: just play Phantom** (even with a skin) — your stated reasons are close range and smoke spray; the Vandal 30m+ rule above stays." }
+        ] }
+      ]
+    },
+    {
+      "id": "movement",
+      "title": "Movement, Peeking, Jiggling, Clearing",
+      "blocks": [
+        { "type": "list", "style": "ul", "items": [
+          { "text": "**AD peek:** peek an angle, try to kill, go back — if you must live, jiggle back." },
+          { "text": "**Swing wider when you're in the open** — more of their angles open at once; use **LRLL → RLRR**, don't go wider-wider." },
+          { "text": "**Commit on audio:** **when you hear them walking:** commit out to the fight — because they can't hear your swing coming." },
+          { "text": "**Swing off timings** (audio cue, util usage) — because a swing while they're locked in util or sound is a free first shot." },
+          { "text": "**Get a run-up before swinging** — speed beats their crosshair placement; tap **2 bullets then strafe** in A/D fights." },
+          { "text": "**Burst fire, don't spray; don't always crouch** — crouching is a commitment you can't unmake, so learn to shoot standing." },
+          { "text": "**Get cover first, then util** — if forced, use util while unpeeking (jump-strafe toward cover with gun ready) — because standing in the open with util is a free kill." },
+          { "text": "**Jump-strafe util:** jump-peek and throw — because it gives you a chance to get out where standing still doesn't." },
+          { "text": "**Jiggle:**", "children": { "style": "ol", "items": [
+            { "text": "**When they have a sniper/AWP:** jiggle — because you can't out-duel a one-shot without info." },
+            { "text": "Two sizes: little and big; get a run-up for speed." },
+            { "text": "Jiggle to throw util, for info on long strips (Haven C long), and gun-out to clear." },
+            { "text": "**Don't** jiggle a wall-bangable spot, after spotting 2+ people, or into an AWP trying to kill him." },
+            { "text": "Jiggle for info **then** swing for the kill; never the same way 3×." }
+          ] } },
+          { "text": "**Never hide in a corner:** the player farther from the corner sees you first and you're easy to pre-aim — jiggle or crouch-peek jiggle instead." },
+          { "text": "**Clear incrementally:** before site, clear all front angles; use util to clear bit by bit; **don't clear** an AWP or pixel angle — flash it instead; when smoked off, use util." },
+          { "text": "**Take space like slicing the pie:** C has only 4 corners — find the safest path that clears them one by one, and trade util for the spots you can't clear safely. This is how you pressure two sites at once." }
+        ] }
+      ]
+    },
+    {
+      "id": "rounds",
+      "title": "Round Flow and Decisions",
+      "blocks": [
+        { "type": "heading", "id": "attack", "text": "Attack" },
+        { "type": "list", "style": "ul", "items": [
+          { "text": "**Shift-walk neutral space** — if they aren't fighting it, you catch them by surprise." },
+          { "text": "**Bait util, cut noise, walk back, then hit site** — because their util is now spent on nothing." },
+          { "text": "**Contact:** whole team walks up slowly, util only on contact, then swing — because defenders get less rotation time." },
+          { "text": "**Plant timing:** plant only with map control; otherwise take 1v1s for equal numbers. **When** a teammate is about to die and you have spike: trade the Jett for the 2v1 instead of planting. Tap before sticking if they've used all util; sticking is usually stupid; in a 1v3 with time, tap to bait timings." },
+          { "text": "**If a teammate goes wide while you stick:** leave spike and swing — 2 guns beat a planted spike. While a teammate defuses, prefire/jiggle to slow the push." },
+          { "text": "**Plant open when you have space** — more angles for you while defusing (learn per-map plant spots)." },
+          { "text": "**Post-plant:** less util → play more aggressive (closest to CT is the most dangerous angle, usually the Duelist); more util → front site, throw util toward CT, then cover near main. Post-plant util is almost always **main** (Brim molly, Astra pull, KJ/Sova ult, Phoenix ult). *(Post-plant best positions: watch the video.)*" }
+        ] },
+        { "type": "heading", "id": "defense", "text": "Defense" },
+        { "type": "list", "style": "ul", "items": [
+          { "text": "**Choke point logic:** wait for someone to push, util the choke, then fight — most fights are to hold a choke point. Fight for neutral space at one point of the map." },
+          { "text": "**Don't play on site unless you're a Sentinel:** Sentinels anchor and rotate only on info; everyone else plays back site or toward mid — that saves **5 seconds** on rotates and lets you stall." },
+          { "text": "**Flank ~40% of the time (about 5 rounds a half);** more if site has multiple entrances. If they start holding you, stop for a while. Hide-and-shoot beats taking the fight." },
+          { "text": "**Die A → go B** (best vs low ranks): kills on A make them rotate and they usually won't re-hit A; if you got destroyed, play default next round; if you destroyed them at main, don't stop." },
+          { "text": "**Counter a 5-man push:** give them site behind their smoke and spam the choke (~50% kill through it); if you can't, go deep (Hell, Boathouse, Drop) or play around a site smoke; stall **2–3 seconds** with any util for rotates; then swing as your team floods. Solo anchor = never front site." },
+          { "text": "**Set plays are fine — repeating them is not:** pick up the pattern in the first **4 rounds** (Elbo R1 and R3, same trips, Jett market R4) — a repeatable setup is a pre-aimable one." },
+          { "text": "**Rotate your positions every few rounds:** **Sentinel** back site or front site, different trips every **3rd round**; **Duelist** passive → aggro main → mid, never the same site; **Initiator** plays with the Duelist or swaps places with him / goes main with the Sentinel, and uses **3 different scans** instead of the same dart/eye; **Controller** anywhere — just switch it up." },
+          { "text": "**Attack version:** don't lurk the same spot every round, try stacking sites; let them learn you lurk solo, then run **4 contact + 1 fake noise**. If something works **2–3 times**, change it once — make the game feel as different as possible." }
+        ] },
+        { "type": "heading", "id": "trading", "text": "Trading" },
+        { "type": "list", "style": "ul", "items": [
+          { "text": "**Trading base:** if an enemy can't reach you without walking into your teammate first, swing the moment your teammate takes contact — two guns on one target wins. Peek on minimap, gunshots, gut." },
+          { "text": "**Attack:** non-Duelists follow the Duelist. **Post-plant:** swing while they shoot your teammate. **Defense:** crossfires on site — play around your teammate and profit if he dies." },
+          { "text": "**Advanced:** go side-to-side/shoulder-to-shoulder; the close-to-wall player trades because the enemy sees him first and a wide swing arrives late (Haven A graffiti hold; attack: walk to wall, teammate swings, you follow in)." },
+          { "text": "**Practice:** follow a friend in TDM or Gauntlet, always behind him." },
+          { "text": "**After a kill, reposition** (corners, behind them) — because they'll swing where you were; swap the spot so they can't pre-aim your habit." }
+        ] },
+        { "type": "heading", "id": "info", "text": "Info and Minimap" },
+        { "type": "list", "style": "ul", "items": [
+          { "text": "**Comm counts, not \"all\":** you can tell 2 from 4 people spamming a smoke — call \"1 is spamming\" or \"at least 2 main,\" escalate to \"at least 3,\" never \"all 4\" — because overcounting sends rotates the wrong way. Count only spam and util." },
+          { "text": "**Sniff fakes by delay:** spam and util have a solid delay between them — util with no preceding spam (or the reverse) is the tell." },
+          { "text": "**Pick the site by util count:** if util says 3–4 are here, hit the site with 1. (Trip broken + drone + Chamber seen → 2 CT and 1 flank → wrap link on that timing.)" },
+          { "text": "**Your own path reveals the map:** if your team lurked up or came from mid, the space behind them is clear — how else would they be alive? Play the map, but watch timings in the gaps you left too long." }
+        ] },
+        { "type": "heading", "id": "numbers", "text": "Numbers, HP, and Clutches" },
+        { "type": "list", "style": "ul", "items": [
+          { "text": "**When down numbers or clutching:** look for **1v1s**. **When up numbers:** trade teammates. **When way up:** favorable 1v1s. **Equal numbers on attack:** fair 1v1s. **Equal on defense:** advantageous fights only. **Eco equal:** equal 1v1s; **eco down:** fair 1v1s or 2v1s; **eco up:** don't die, take 3v1s. **On eco:** stack site, don't solo anchor." },
+          { "text": "**When the enemy is ≤40 HP:** aim body, hold a pixel angle, no 50/50s; jiggle-burst if multiple hold a crossfire." },
+          { "text": "**When you are ≤40 HP:** take 50/50s, spam dead-zone taps and fall back shooting, and clear angles one at a time." },
+          { "text": "**1HP plays:**", "children": { "style": "ol", "items": [
+            { "text": "headshot/pixel angle — both of you must hit the head;" },
+            { "text": "flank — 50/50 if unchecked beats ~20% in a straight fight;" },
+            { "text": "danger fight — a swing-and-one-tap angle, not a corner they can body-spray around." }
+          ] } },
+          { "text": "**Give yourself a chance:** with **20s** left, subtract **7s** spike + **2–3s** fight → ~**11s** to clear; **40s** isn't enough to slow-walk from mid; spike mid-site (4 angles) means run it down; a 3v2 retake vs Sova ult means push faster." },
+          { "text": "**When you have no util or low HP:** run — counterpush before you lose site, flank as it falls, shoot the trip then come back or flank, and open a new angle so your death is traded." },
+          { "text": "**2v1 plant:** one player per site — the lone planter must clear ghost crossfires, wasting time; once planted, reposition NOW (link for 1v1s, or main)." },
+          { "text": "**Spike 3s/6s rule (open spike, 1v1):** don't swing the first second (99.99% he checks — 4 angles); wait **3s** because he wants to finish the halve animation; at **20s** that's 6–7 peeks instead of 20. Jiggle at 6s: if halfed, wait 3, else wait 6. In smokes, wait ~5s before swinging." },
+          { "text": "**Panic attack:** pixel angle; run to a smoke spraying it; prefire common angles; spam through smoke while backing out; wall-bang instead of peeking 5 people. Be silent unless necessary." },
+          { "text": "**Catch up and punish:** use util the instant it makes contact (Fade dog on Haven garage → TP or run up as it enters) — waiting lets her fall back to site. Swing **with** the drone, not after. Ask for recon/flashes; punish the fallback timing." },
+          { "text": "**4-step punish process:**", "children": { "style": "ol", "items": [
+            { "text": "What mistake are they making?" },
+            { "text": "Will they do it again?" },
+            { "text": "How do we punish it?" },
+            { "text": "How do we get away if the punish fails?" }
+          ] } }
+        ] },
+        { "type": "heading", "id": "after-round", "text": "After the Round" },
+        { "type": "list", "style": "ul", "items": [
+          { "text": "**Don't burn a flank you'll want again:** if you were flanking and the team won, stay put — revealing that Phoenix likes the flank costs you the next one." },
+          { "text": "**Drop the gun:** on an eco or half-buy win, drop a gun for the teammate coming from behind — he won't make the buy in time." },
+          { "text": "**Orbs before spike:** in a **4v1** vs a saving enemy, collect orbs first — the closest player takes an unclaimed orb — and give spike if you already have ult." }
+        ] }
+      ]
+    },
+    {
+      "id": "utility",
+      "title": "Utility and Ults",
+      "blocks": [
+        { "type": "list", "style": "ul", "items": [
+          { "text": "**Overuse util early** — people start aggressive and full of ego; util-dumping conditions them to back off. Once they stop resisting (A main), use less (Phoenix flash instead of blind+nade); if they flash, stun back." },
+          { "text": "**More resistance = more util;** if they stop taking space, save it; work the map with rechargeables. On defense start further back so you don't walk into their util." },
+          { "text": "**Take a lone player's space with util** — cheaper than fighting a double/triple swing." },
+          { "text": "**Suppressing vs punishing:** suppressing keeps them in a corner or off site for a second or two (Skye flash on the Split mid left corner); punishing goes for the kill (same flash, enemy on the right). If the util expires before you arrive, it was suppressing; if you convert, it was punishing." },
+          { "text": "**Combos:** mollies + stuns, recon + flashes, smokes + anything (Sova/Waylay/KAY/O/Omen: noise → slow + molly; drone → flash)." },
+          { "text": "**Smoke the spike, not main** — they don't know where to spam you. Any wall/smoke works (Neon, Phoenix, Jett)." },
+          { "text": "**Ults:** better to pop and fight than hold it.", "children": { "style": "ul", "items": [
+            { "text": "**Anytime:** Veto, Reyna, Cypher (round start), Chamber, Jett, Neon (on the push)." },
+            { "text": "**Need info:** Omen, Deadlock." },
+            { "text": "**To gain site / turn 3v5 into 4v5:** Sage, Clove." },
+            { "text": "**Execute/retake:** KJ, Tejo, Astra, KAY/O, Skye, Sova, Viper, Yoru, Vyse (bad on 3v5 unless it guarantees the round)." },
+            { "text": "**Win the 1v1 on attack/execute:** Waylay, Raze, Gekko, Miks, Phoenix, Iso, Breach." }
+          ] } },
+          { "text": "**Check ult routine:** compare both teams' ults pre-round — Astra ult means don't play main; Breach ult means don't play site or push spawn." }
+        ] }
+      ]
+    },
+    {
+      "id": "comms",
+      "title": "Pro Comms",
+      "blocks": [
+        { "type": "heading", "text": "Information Coms" },
+        { "type": "list", "style": "ul", "items": [
+          { "text": "Giving your team facts" },
+          { "text": "Clean, useful information" },
+          { "text": "Helps you and your team make smarter plays and decisions" }
+        ] },
+        { "type": "heading", "text": "Intention Coms" },
+        { "type": "list", "style": "ul", "items": [
+          { "text": "What you're doing" },
+          { "text": "What you are going to do" }
+        ] },
+        { "type": "heading", "text": "Coordination Coms" },
+        { "type": "list", "style": "ul", "items": [
+          { "text": "What you want your teammates to do" },
+          { "text": "Keep your calls simple and specific" },
+          { "text": "Focus only on the players near you (unless you're the IGL in a tournament — then you need to know)" }
+        ] },
+        { "type": "heading", "text": "Vibe Coms" },
+        { "type": "list", "style": "ul", "items": [
+          { "text": "Keep the energy high (glaze your teammates for winning)" },
+          { "text": "Help the team stay locked into the present moment (if a mistake happened, move on and play round by round)" },
+          { "text": "Avoid toxic coms (don't attack your teammates' play or anything)" }
+        ] }
+      ]
+    },
+    {
+      "id": "open-questions",
+      "title": "Open Questions",
+      "blocks": [
+        { "type": "list", "style": "ul", "items": [
+          { "text": "**AWP agent list vs the principle.** The stated law is \"free escape after the shot,\" which strictly covers Jett, Chamber, Yoru, Waylay. Week 4 also lists Raze, Neon, and Reyna — Raze/Neon have mobility but no clean post-shot escape, Reyna's dismiss requires a kill. Resolve: which list governs?" },
+          { "text": "**1HP definition** — \"<40 HP (and maybe <81 HP)\" — the 81 threshold is unclear; 40 is used for every rule." },
+          { "text": "**\"Always light armor with no damage util\"** vs full buy normally meaning heavy — does this apply to all rounds or only force/eco?" },
+          { "text": "**Phantom absolutism** (\"just play Phantom\") coexists with \"Vandal at 30m+\" — kept both; confirm whether Phantom is truly all-round for you." },
+          { "text": "**\"Force Round Buys: buy guns after winning pistol\"** appears to contradict the attacker bonus table (3rd = bonus) and defender eco (2nd = eco). Clarify what \"force\" means on 2nd." },
+          { "text": "**Dead zone** — undefined in the notes; meaning above is inferred." },
+          { "text": "**\"Don't goon\"** — no reason given; inferred above." },
+          { "text": "**Corner rule tension** — \"never hide in a corner\" vs \"corners are good\" for post-kill repositioning. Likely holding vs after-kill, but the notes don't say." },
+          { "text": "**Defender buy pattern** (5th/7th eco) — fixed pattern or read-based?" },
+          { "text": "**Bandit** — not a standard Valorant gun; alternate name or new weapon?" },
+          { "text": "**Miks, Veto** — agent names to confirm." },
+          { "text": "**\"LRLL → RLRR\"** — notation unclear (strafe pattern? swing directions?)." },
+          { "text": "**Sheriff \"even round\"** — meaning unclear (full-buy parity? economy parity?)." },
+          { "text": "**Dropped placeholders** — \"Choose Where To Push\" (Diamond) placeholder removed on request; \"Extra Gaps Of Information\" (Immortal) is still marked as a placeholder — confirm delete or restore." }
+        ] }
+      ]
+    },
+    {
+      "id": "ranks",
+      "title": "Rank Progression Appendix",
+      "blocks": [
+        { "type": "table", "id": "ranksTable", "wrapId": "ranksTableWrap", "headers": ["Rank", "Skills unlocked"], "rows": [
+          ["Iron", "AD peek, orb farming, cover discipline, the 99% rotation, jiggling, util from cover"],
+          ["Bronze", "Die A go B, 40% flanking, force buys, A/D tap-strafe, attack/defense fundamentals, aggression triggers"],
+          ["Silver", "Repositioning, trading base, plant timing, incremental space, don't play on site, never hide in a corner, learn what works"],
+          ["Gold", "Number-based decisions, 1HP rules, time math, Operator guide, ult timing, util resistance, util combos"],
+          ["Platinum", "No-util/low-HP runs, angle clearing, smoking the spike, jump-strafe util, suppressing vs punishing, countering 5-man pushes, 3s/6s rule"],
+          ["Diamond", "Advanced trading, 2v1 plants, lock-in, check-ult routine, 1HP/down-numbers variant"],
+          ["Ascendant", "Post-plant util, panic attack, reading agents, play solo until you can't, catch-up punish, comp counters, contain and squash"],
+          ["Immortal", "Defensive position variety, comms counts and fake detection, minimap decisions, post-round actions, 4-step punish process, reading individual players *(still missing: Extra Gaps Of Information)*"]
+        ] }
+      ]
+    }
+  ]
+}
+;
