@@ -400,6 +400,8 @@ const themeIcon = $('#themeIcon');
 function applyTheme(theme) {
   document.documentElement.setAttribute('data-theme', theme);
   themeIcon.textContent = theme === 'light' ? '☀️' : '🌙';
+  const meta = document.querySelector('meta[name="theme-color"]');
+  if (meta) meta.setAttribute('content', theme === 'light' ? '#f5f2ec' : '#120c09');
   try { localStorage.setItem(THEME_KEY, theme); } catch (e) {}
 }
 

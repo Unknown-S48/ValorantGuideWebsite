@@ -36,6 +36,7 @@
   --accent-2: #ffc061;    /* molten gold */
   --accent-3: #ff2e55;    /* hot crimson */
   --border: #362317;
+  --border-2: #4a3122;
   --mark-bg: #ffc061;
   --mark-text: #201204;
   --shadow: 0 14px 40px rgba(0, 0, 0, 0.55);
@@ -45,21 +46,25 @@
 }
 
 html[data-theme="light"] {
-  --bg: #f8f1e7;
-  --bg-2: #fffaf3;
-  --bg-3: #f3e7d8;
-  --bg-4: #e9d7c2;
-  --text: #241a11;
-  --text-strong: #160e07;
-  --muted: #7d6a57;
-  --accent: #d64d1c;
-  --accent-2: #b06a17;
-  --accent-3: #c22445;
-  --border: #e2cfba;
-  --mark-bg: #ffcf7a;
-  --mark-text: #241502;
-  --shadow: 0 14px 40px rgba(80, 40, 15, 0.18);
-  --shadow-sm: 0 4px 14px rgba(80, 40, 15, 0.12);
+  /* DAYLIGHT — cool paper surfaces, ink text, deepened ember accents.
+     Glow/shadow effects from the ember theme read as mud on white, so they
+     are swapped for crisp borders (see light-mode refinements below). */
+  --bg: #f5f2ec;
+  --bg-2: #ffffff;
+  --bg-3: #efe9e1;
+  --bg-4: #e6dfd5;
+  --text: #241d17;
+  --text-strong: #0e0a07;
+  --muted: #6a6055;
+  --accent: #bf400d;      /* ember orange, deepened for contrast on white */
+  --accent-2: #8a5a12;    /* molten gold, darkened -> readable as h3/link ink */
+  --accent-3: #b0203f;    /* hot crimson */
+  --border: #dcd2c5;
+  --border-2: #c9bda9;    /* stronger edge for cards/rows in daylight */
+  --mark-bg: #ffd27a;
+  --mark-text: #1a1206;
+  --shadow: 0 14px 34px rgba(60, 42, 28, 0.13);
+  --shadow-sm: 0 2px 10px rgba(60, 42, 28, 0.08);
 }
 
 /* ============================================================
@@ -100,7 +105,32 @@ body::before {
     radial-gradient(460px 320px at 8% 92%, rgba(255, 46, 85, 0.08), transparent 60%);
   animation: emberDrift 14s ease-in-out infinite alternate;
 }
-html[data-theme="light"] body::before { animation: none; opacity: 0.5; }
+/* ---------- light-mode refinements ---------- */
+/* The dark theme's radial ember haze is invisible-to-muddy on paper, so
+   daylight gets a barely-there tint and no drifting glow. */
+html[data-theme="light"] body {
+  background:
+    radial-gradient(1100px 560px at 88% -12%, rgba(191, 64, 13, 0.05), transparent 62%),
+    radial-gradient(900px 520px at -8% 8%, rgba(176, 32, 63, 0.035), transparent 60%),
+    var(--bg);
+}
+html[data-theme="light"] body::before { display: none; }
+html[data-theme="light"] .immortal-badge { animation: none; filter: none; }
+html[data-theme="light"] .progress-fill { box-shadow: none; }
+html[data-theme="light"] header.page-head h1 em { text-shadow: none; }
+html[data-theme="light"] .tab.active {
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--accent) 24%, transparent);
+}
+html[data-theme="light"] .topbar {
+  background: color-mix(in srgb, var(--bg-2) 84%, transparent);
+  border-bottom-color: var(--border-2);
+}
+html[data-theme="light"] .tabstrip { border-bottom-color: var(--border-2); }
+html[data-theme="light"] tbody tr:nth-child(even) { background: color-mix(in srgb, var(--text) 4%, transparent); }
+html[data-theme="light"] tbody tr:hover { background: color-mix(in srgb, var(--accent) 8%, transparent); }
+html[data-theme="light"] .table-wrap { border-color: var(--border-2); }
+html[data-theme="light"] .rank-meter-track { background: var(--bg-4); box-shadow: inset 0 1px 2px rgba(60, 42, 28, 0.14); }
+html[data-theme="light"] .toast { border-color: var(--border-2); }
 
 ::selection { background: var(--accent); color: #fff; }
 a { color: var(--accent-2); }
